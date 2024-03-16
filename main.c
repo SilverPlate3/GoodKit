@@ -6,8 +6,8 @@
 #include <linux/fs.h>
 #include <linux/limits.h>
 #include <linux/sched.h> 
-#include <linux/uaccess.h> 
 #include <linux/kprobes.h> 
+#include "StringUtils.h"
 
 #ifndef CONFIG_KPROBES
 #error "CONFIG_KPROBES is not defined but is required."
@@ -23,54 +23,6 @@
 static unsigned long **sys_call_table_stolen; 
 static asmlinkage long (*original_execve)(const struct pt_regs *);
 
-int join_strings_from_user(const char __user *const __user *ups, const char *delim, char *buff, size_t bufcap)
-{
-    int index = 0;
-    const char __user* up;
-    char *tmp = kmalloc(bufcap, GFP_KERNEL);
-    if (unlikely(!tmp))
-    {
-        return index;
-    }
-
-    if (copy_from_user(&up, ups, sizeof up))
-    {
-        goto join_strings_from_user_exit;
-    }
-        
-    if (strncpy_from_user(buff, up, bufcap) <= 0)
-    {
-        goto join_strings_from_user_exit;
-    }
-
-    index = 1;
-    if (copy_from_user(&up, ups + index, sizeof up))
-    {
-        index = 0;
-        goto join_strings_from_user_exit;
-    }
-
-    while (up) {
-        strlcat(buff, delim, bufcap);
-        if (strncpy_from_user(tmp, up, sizeof tmp) <= 0)
-        {
-            index = 0;
-            goto join_strings_from_user_exit;
-        }
-
-        strlcat(buff, tmp, bufcap);
-        index += 1;
-        if (copy_from_user(&up, ups + index, sizeof up))
-        {
-            index = 0;
-            goto join_strings_from_user_exit;
-        }
-    }
-
-join_strings_from_user_exit:
-    kfree(tmp);
-    return index;
-}
 
 static asmlinkage long our_sys_execve(const struct pt_regs *regs) 
 {
@@ -78,19 +30,19 @@ static asmlinkage long our_sys_execve(const struct pt_regs *regs)
     const char __user *const __user *__argv = (const char __user *const __user *)regs->si;
 
     uid_t uid = __kuid_val(current_uid());
+    gid_t gid = __kgid_val(current_gid());
 
     int filename_len = strnlen_user(__filename, PATH_MAX);
     char *filename = kmalloc(filename_len+1, GFP_KERNEL);
     if (unlikely(!filename))
     {
         pr_info("Failed to allocate memory for filename\n");
-        goto calling_original_execve;
+        goto call_original_execve;
     }
     if(copy_from_user(filename, __filename, filename_len))
     {
         pr_info("Failed to copy filename from user space\n");
-        kfree(filename);
-        goto calling_original_execve;
+        goto free_file_name_and_call_original_execve;
     }
     filename[filename_len] = '\0'; 
 
@@ -99,16 +51,28 @@ static asmlinkage long our_sys_execve(const struct pt_regs *regs)
     if (unlikely(!full_command))
     {
         pr_info("Failed to allocate memory for full_command\n");
-        goto calling_original_execve;
+        goto free_file_name_and_call_original_execve;
     }
 
     int argc = join_strings_from_user(argv, " ", full_command, MAX_ARG_LENGTH);
     full_command[MAX_ARG_LENGTH - 1] = '\0';
-    pr_info("uid: %d, argc: %d, binary: '%s', Full command: '%s'\n", uid, argc, filename, full_command);
+    pr_info("gid: %d uid: %d, argc: %d, binary: '%s', Full command: '%s'\n", gid, uid, argc, filename, full_command);
+    if(string_compare_with_wildcards("ping*", full_command))
+    {
+        pr_info("Blocked ping\n");
+        goto execve_prevention;
+    }
+
     kfree(full_command);
-    
-calling_original_execve:
+free_file_name_and_call_original_execve:
+    kfree(filename);
+call_original_execve:
     return original_execve(regs);
+
+execve_prevention:
+        kfree(full_command);
+        kfree(filename);
+        return -EPERM;
 }
 
 static unsigned long **acquire_sys_call_table(void) 
