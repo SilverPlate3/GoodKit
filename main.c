@@ -1,19 +1,21 @@
 #include <linux/delay.h> 
 #include <linux/kernel.h> 
 #include <linux/module.h> 
-#include <linux/moduleparam.h> /* which will have params */ 
-#include <linux/unistd.h> /* The list of system calls */ 
 #include <linux/cred.h> /* For current_uid() */ 
 #include <linux/uidgid.h> /* For __kuid_val() */ 
-#include <linux/version.h> 
-#include <linux/compat.h>
-#include <linux/sched/signal.h>
 #include <linux/fs.h>
-#include <linux/binfmts.h>
 #include <linux/limits.h>
 #include <linux/sched.h> 
 #include <linux/uaccess.h> 
 #include <linux/kprobes.h> 
+
+#ifndef CONFIG_KPROBES
+#error "CONFIG_KPROBES is not defined but is required."
+#endif
+
+#ifndef CONFIG_ARCH_HAS_SYSCALL_WRAPPER
+#error "CONFIG_ARCH_HAS_SYSCALL_WRAPPER is not defined but is required."
+#endif
 
 #define MKVAR(Type, Name, From) Type Name = (Type)(From);
 #define MAX_ARG_LENGTH 1024
@@ -177,4 +179,4 @@ MODULE_LICENSE("GPL");
 
 
 // TODO 1): Find what macros are needed (from lmkpg) and do build errror if they are not present. 
-// 1) CONFIG_COMPAT, 
+// 1) CONFIG_KPROBES, CONFIG_ARCH_HAS_SYSCALL_WRAPPER
