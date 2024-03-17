@@ -7,7 +7,9 @@
 #include <linux/limits.h>
 #include <linux/sched.h> 
 #include <linux/kprobes.h> 
+
 #include "StringUtils.h"
+#include "Rules.h"
 
 #ifndef CONFIG_KPROBES
 #error "CONFIG_KPROBES is not defined but is required."
@@ -140,7 +142,3 @@ module_init(good_kit_init);
 module_exit(good_kit_exit); 
  
 MODULE_LICENSE("GPL");
-
-
-// TODO 1): Find what macros are needed (from lmkpg) and do build errror if they are not present. 
-// 1) CONFIG_KPROBES, CONFIG_ARCH_HAS_SYSCALL_WRAPPER
