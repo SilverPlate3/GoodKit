@@ -43,7 +43,7 @@ void print_rules(void)
     {
         if(temp->rule.type == execve)
         {
-            pr_info("binary_path: %s\nfull_command: %s\nuid: %d\ngid: %d\nargc: %d\n prevention: %d\n",
+            pr_info("\n-------- execve rule -----------\nbinary_path: %s\nfull_command: %s\nuid: %d\ngid: %d\nargc: %d\n prevention: %d\n",
                     temp->rule.data.execve.binary_path,
                     temp->rule.data.execve.full_command,
                     temp->rule.data.execve.uid,
@@ -65,7 +65,7 @@ void delete_rules(void)
     {
         if(temp->rule.type == execve)
         {
-            pr_info("deleting binary_path: %s\nfull_command: %s\nuid: %d\ngid: %d\nargc: %d\nprevention: %d\n",
+            pr_info("\n------- deleting execve rule --------\nbinary_path: %s\nfull_command: %s\nuid: %d\ngid: %d\nargc: %d\nprevention: %d\n",
             temp->rule.data.execve.binary_path,
             temp->rule.data.execve.full_command,
             temp->rule.data.execve.uid,
