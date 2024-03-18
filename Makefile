@@ -1,5 +1,5 @@
 obj-m += mymodule.o
-mymodule-objs := main.o StringUtils.o
+mymodule-objs := main.o StringUtils.o ExecveEvent.o Rules.o
 
 PWD := $(CURDIR)
 
