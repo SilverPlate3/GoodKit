@@ -32,7 +32,7 @@ int add_rule(struct rule *rule)
         return EINVAL;
     }
 
-    list_add(&new_node->list, &rules_list_head);
+    list_add_tail(&new_node->list, &rules_list_head);
     return 0;
 }
 

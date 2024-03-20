@@ -26,6 +26,8 @@ struct rule
     } data;
 };
 
+#ifdef CONFIG_KPROBES
+
 struct rules_list
 {
     struct list_head list;
@@ -37,3 +39,5 @@ int add_rule(struct rule *rule);
 void print_rules(void);
 
 void delete_rules(void);
+
+#endif
