@@ -1,4 +1,5 @@
 #include "Rules.h"
+#include "StringUtils.h"
 
 #include <linux/types.h>
 #include <linux/slab.h>
@@ -6,7 +7,7 @@
 
 LIST_HEAD(rules_list_head);
 
-int add_rule_raw(struct rule *rule)
+static int add_rule_raw(struct rule *rule)
 {
     struct rules_list * new_node = kmalloc(sizeof(struct rules_list), GFP_KERNEL);
     if(unlikely(new_node == NULL))
@@ -37,7 +38,7 @@ int add_rule_raw(struct rule *rule)
     return 0;
 }
 
-void print_rules_raw(void)
+static void print_rules_raw(void)
 {
     struct rules_list *temp;
     list_for_each_entry(temp, &rules_list_head, list) 
@@ -59,7 +60,7 @@ void print_rules_raw(void)
     }
 }
 
-void delete_rules_raw(void)
+static void delete_rules_raw(void)
 {
     struct rules_list *temp, *next;
     list_for_each_entry_safe(temp, next, &rules_list_head, list) 
@@ -83,6 +84,79 @@ void delete_rules_raw(void)
     }
 }
 
+static void print_matched_execve_rule(const execve_event *event, const struct execve_rule *execve_rule)
+{
+    pr_info("execve event match rule.\nRule.binary_path: '%s' Event.binary_path: '%s'\nRule.full_command: '%s' Event.full_command: '%s'\nRule.uid: %d Event.uid: %d\nRule.gid: %d Event.gid: %d\nRule.argc: %d Event.argc: %d\n",
+            execve_rule->binary_path, event->binary_path, execve_rule->full_command, event->full_command, execve_rule->uid, event->uid, execve_rule->gid, event->gid, execve_rule->argc, event->argc);
+
+}
+
+static int is_execve_event_match_rule(const execve_event *event, const struct execve_rule *execve_rule)
+{
+    if(strcmp(execve_rule->binary_path, DEFAULT_BINARY_PATH) != 0)
+    {
+        if(string_compare_with_wildcards(execve_rule->binary_path, event->binary_path) == 0)
+        {
+            return 0;
+        }
+    }
+
+    if(strcmp(execve_rule->full_command, DEFAULT_FULL_COMMAND) != 0)
+    {
+        if(string_compare_with_wildcards(execve_rule->full_command, event->full_command) == 0)
+        {
+            return 0;
+        }
+    }
+
+    if(execve_rule->uid != DEFAULT_UID)
+    {
+        if(event->uid != execve_rule->uid)
+        {
+            return 0;
+        }
+    }
+
+    if(execve_rule->gid != DEFAULT_GID)
+    {
+        if(event->gid != execve_rule->gid)
+        {
+            return 0;
+        }
+    }
+
+    if(execve_rule->argc != DEFAULT_ARGC)
+    {
+        if(event->argc != execve_rule->argc)
+        {
+            return 0;
+        }
+    }
+
+    print_matched_execve_rule(event, execve_rule);
+    return 1;
+}
+
+static struct rule * does_event_match_rule(const execve_event *event)
+{
+    struct rules_list *temp;
+    list_for_each_entry(temp, &rules_list_head, list) 
+    {
+        if(temp->rule.type == execve)
+        {
+            if(is_execve_event_match_rule(event, &temp->rule.data.execve))
+            {
+                return &temp->rule;
+            }
+        }
+        else
+        {
+            pr_alert("unsuported rule type\n");
+        }
+    }
+
+    return NULL;
+}
 
 static DEFINE_RWLOCK(rules_list_rw_lock); 
 
@@ -110,4 +184,14 @@ void delete_rules(void)
     write_lock_irqsave(&rules_list_rw_lock, flags); 
     delete_rules_raw();
     write_unlock_irqrestore(&rules_list_rw_lock, flags); 
+}
+
+struct rule * does_event_match_rule(const execve_event *event)
+{
+    struct rule *rule;
+    unsigned long flags; 
+    read_lock_irqsave(&rules_list_rw_lock, flags);
+    rule = does_event_match_rule(event);
+    read_unlock_irqrestore(&rules_list_rw_lock, flags); 
+    return rule;
 }
