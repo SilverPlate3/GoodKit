@@ -1,12 +1,11 @@
+#include "ExecveEvent.h"
+#include "IoctlContracts.h"
+#include "RulesIoctl.h"
+
 #include <linux/module.h> 
-#include <linux/fs.h>
 #include <linux/limits.h>
 #include <linux/sched.h> 
 #include <linux/kprobes.h> 
-#include <linux/miscdevice.h>
-
-#include "ExecveEvent.h"
-#include "IoctlContracts.h"
 
 #ifndef CONFIG_KPROBES
 #error "CONFIG_KPROBES is not defined but is required."
@@ -78,93 +77,6 @@ static void disable_write_protection(void)
     __write_cr0(cr0); 
 } 
 
-enum { 
-    NOT_USED = 0, 
-    USED = 1, 
-}; 
-
-static atomic_t good_kit_rules_file_open = ATOMIC_INIT(NOT_USED); 
-
-static int good_kit_rules_open(struct inode *inode, struct file *file)
-{
-        try_module_get(THIS_MODULE); 
-        return 0;
-}
-
-static int good_kit_rules_release(struct inode *inode, struct file *file) 
-{ 
-    module_put(THIS_MODULE); 
-    return 0; 
-} 
-
-static long good_kit_rules_ioctl_main_callback(struct file *file, unsigned int ioctl_num, unsigned long parameter) 
-{
-    pr_info("good_kit_rules_ioctl_main_callback\n");
-    if (atomic_cmpxchg(&good_kit_rules_file_open, NOT_USED, USED)) 
-    {
-        pr_alert("good_kit_rules_ioctl_main_callback - file is already open\n");
-        return -EBUSY; 
-    }
-
-    int rv = 0;
-    switch (ioctl_num) 
-    {
-        case ADD_RULE:
-        {
-            pr_info("good_kit_rules_ioctl_main_callback - ADD_RULE\n");
-            struct rule *rule = kmalloc(sizeof(struct rule), GFP_KERNEL);
-            if (!rule) 
-            {
-                pr_alert("good_kit_rules_ioctl_main_callback - failed to allocate memory for rule");
-                rv = -ENOMEM;
-                goto good_kit_rules_ioctl_main_callback_exit;
-            }
-
-            if(copy_from_user(rule, (struct rule *)parameter, sizeof(struct rule)))
-            {
-                pr_alert("good_kit_rules_ioctl_main_callback - failed to copy rule from user");
-                kfree(rule);
-                rv = -EFAULT;
-                goto good_kit_rules_ioctl_main_callback_exit;
-            }
-
-            add_rule(rule);
-            kfree(rule);
-            break;
-        }
-        case PRINT_ALL_RULLES:
-        {
-            pr_info("good_kit_rules_ioctl_main_callback - PRINT_ALL_RULLES\n");
-            print_rules();
-            break;
-        }
-        default:
-        {
-            pr_alert("good_kit_rules_ioctl_main_callback - ioctl_num not found\n");
-            rv = -EINVAL;
-            goto good_kit_rules_ioctl_main_callback_exit;
-        }
-    }
-
-good_kit_rules_ioctl_main_callback_exit:
-    atomic_set(&good_kit_rules_file_open, NOT_USED); 
-    return rv; 
-}
-
-static const struct file_operations fops = {
-    .owner          = THIS_MODULE,
-    .open           = good_kit_rules_open,
-    .release        = good_kit_rules_release,
-    .unlocked_ioctl = good_kit_rules_ioctl_main_callback
-};
-
-//Misc device structure
-struct miscdevice good_kit_rules_misc_device = {
-    .minor = MISC_DYNAMIC_MINOR,
-    .name = RULES_DEVICE_NAME,
-    .fops = &fops,
-};
-
 static int __init good_kit_init(void) 
 {
     pr_info("9------------------------------\n");
@@ -175,9 +87,8 @@ static int __init good_kit_init(void)
         return -1; 
     }
 
-    if (misc_register(&good_kit_rules_misc_device)) 
+    if (register_rules_device()) 
     {
-        pr_info("misc_register failed\n");
         return -1; 
     }
     
@@ -200,7 +111,7 @@ static void __exit good_kit_exit(void)
     enable_write_protection(); 
 
     delete_rules();
-    misc_deregister(&good_kit_rules_misc_device);
+    deregister_rules_device();
 }
 
 module_init(good_kit_init); 

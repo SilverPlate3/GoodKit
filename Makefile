@@ -1,5 +1,5 @@
 obj-m += mymodule.o
-mymodule-objs := main.o StringUtils.o ExecveEvent.o Rules.o
+mymodule-objs := main.o StringUtils.o ExecveEvent.o Rules.o RulesIoctl.o
 
 PWD := $(CURDIR)
 USER_SPACE_TARGET := user_app
