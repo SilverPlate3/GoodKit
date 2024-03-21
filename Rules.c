@@ -137,7 +137,7 @@ static int is_execve_event_match_rule(const execve_event *event, const struct ex
     return 1;
 }
 
-static struct rule * does_event_match_rule(const execve_event *event)
+static struct rule * does_event_match_rule_raw(const execve_event *event)
 {
     struct rules_list *temp;
     list_for_each_entry(temp, &rules_list_head, list) 
@@ -191,7 +191,7 @@ struct rule * does_event_match_rule(const execve_event *event)
     struct rule *rule;
     unsigned long flags; 
     read_lock_irqsave(&rules_list_rw_lock, flags);
-    rule = does_event_match_rule(event);
+    rule = does_event_match_rule_raw(event);
     read_unlock_irqrestore(&rules_list_rw_lock, flags); 
     return rule;
 }
