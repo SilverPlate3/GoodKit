@@ -2,10 +2,11 @@
 
 #include <linux/types.h>
 #include <linux/slab.h>
+#include <linux/rwlock.h> 
 
 LIST_HEAD(rules_list_head);
 
-int add_rule(struct rule *rule)
+int add_rule_raw(struct rule *rule)
 {
     struct rules_list * new_node = kmalloc(sizeof(struct rules_list), GFP_KERNEL);
     if(unlikely(new_node == NULL))
@@ -36,7 +37,7 @@ int add_rule(struct rule *rule)
     return 0;
 }
 
-void print_rules(void)
+void print_rules_raw(void)
 {
     struct rules_list *temp;
     list_for_each_entry(temp, &rules_list_head, list) 
@@ -58,7 +59,7 @@ void print_rules(void)
     }
 }
 
-void delete_rules(void)
+void delete_rules_raw(void)
 {
     struct rules_list *temp, *next;
     list_for_each_entry_safe(temp, next, &rules_list_head, list) 
@@ -80,4 +81,33 @@ void delete_rules(void)
         list_del(&temp->list);
         kfree(temp);
     }
+}
+
+
+static DEFINE_RWLOCK(rules_list_rw_lock); 
+
+int add_rule(struct rule *rule)
+{
+    int ret;
+    unsigned long flags; 
+    write_lock_irqsave(&rules_list_rw_lock, flags); 
+    ret = add_rule_raw(rule);
+    write_unlock_irqrestore(&rules_list_rw_lock, flags); 
+    return ret;
+}
+
+void print_rules(void)
+{
+    unsigned long flags; 
+    read_lock_irqsave(&rules_list_rw_lock, flags);
+    print_rules_raw();
+    read_unlock_irqrestore(&rules_list_rw_lock, flags); 
+}
+
+void delete_rules(void)
+{
+    unsigned long flags; 
+    write_lock_irqsave(&rules_list_rw_lock, flags); 
+    delete_rules_raw();
+    write_unlock_irqrestore(&rules_list_rw_lock, flags); 
 }

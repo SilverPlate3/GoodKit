@@ -34,6 +34,12 @@ struct rules_list
     struct rule rule;
 };
 
+int add_rule_raw(struct rule *rule);
+
+void print_rules_raw(void);
+
+void delete_rules_raw(void);
+
 int add_rule(struct rule *rule);
 
 void print_rules(void);
