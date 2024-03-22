@@ -26,6 +26,7 @@ static asmlinkage long our_sys_execve(const struct pt_regs *regs)
     execve_event * event = create_execve_event(regs);
     if(!event)
     {
+        pr_info("create_execve_event failed\n");
         goto call_original_execve;
     }
 
