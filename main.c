@@ -29,6 +29,20 @@ static asmlinkage long our_sys_execve(const struct pt_regs *regs)
         goto call_original_execve;
     }
 
+    struct rule * rule = does_event_match_rule(event);
+    if(!rule)
+    {
+        goto call_original_execve;
+    }
+    else
+    {
+        struct execve_rule * execve_rule = &rule->data.execve;
+        pr_info("execve event match rule.\nRule.binary_path: '%s' Event.binary_path: '%s'\nRule.full_command: '%s' Event.full_command: '%s'\nRule.uid: %d Event.uid: %d\nRule.gid: %d Event.gid: %d\nRule.argc: %d Event.argc: %d\n",
+            execve_rule->binary_path, event->binary_path, execve_rule->full_command, event->full_command, execve_rule->uid, event->uid, execve_rule->gid, event->gid, execve_rule->argc, event->argc);
+
+        goto execve_prevention;
+    }
+
     // pr_info("gid: %d uid: %d, argc: %d, binary: '%s', Full command: '%s'\n", gid, uid, argc, filename, full_command);
     // if(string_compare_with_wildcards("ping*", full_command))
     // {
