@@ -35,21 +35,10 @@ static asmlinkage long our_sys_execve(const struct pt_regs *regs)
     {
         goto call_original_execve;
     }
-    else
+    if(rule->data.execve.prevention == 1)
     {
-        struct execve_rule * execve_rule = &rule->data.execve;
-        pr_info("execve event match rule.\nRule.binary_path: '%s' Event.binary_path: '%s'\nRule.full_command: '%s' Event.full_command: '%s'\nRule.uid: %d Event.uid: %d\nRule.gid: %d Event.gid: %d\nRule.argc: %d Event.argc: %d\n",
-            execve_rule->binary_path, event->binary_path, execve_rule->full_command, event->full_command, execve_rule->uid, event->uid, execve_rule->gid, event->gid, execve_rule->argc, event->argc);
-
         goto execve_prevention;
     }
-
-    // pr_info("gid: %d uid: %d, argc: %d, binary: '%s', Full command: '%s'\n", gid, uid, argc, filename, full_command);
-    // if(string_compare_with_wildcards("ping*", full_command))
-    // {
-    //     pr_info("Blocked ping\n");
-    //     goto execve_prevention;
-    // }
 
 call_original_execve:
     return original_execve(regs);
@@ -133,40 +122,3 @@ module_init(good_kit_init);
 module_exit(good_kit_exit); 
  
 MODULE_LICENSE("GPL");
-
-/*
-struct rule * rule1 = kmalloc(sizeof(struct rule), GFP_KERNEL);
-    rule1->type = execve;
-    rule1->data.execve.argc = 2;
-    memset(rule1->data.execve.binary_path, 0, sizeof(rule1->data.execve.binary_path));
-    memset(rule1->data.execve.full_command, 0, sizeof(rule1->data.execve.full_command));
-    strncpy(rule1->data.execve.binary_path, "rule 1 has everything", sizeof(rule1->data.execve.binary_path));
-    strncpy(rule1->data.execve.full_command, "cccc.exe -n 123456789 abcde :/d!@#$%^&*()", sizeof(rule1->data.execve.full_command));
-    rule1->data.execve.gid = 99;
-    rule1->data.execve.uid = 88;
-    rule1->data.execve.prevention = 1;
-
-    struct rule * rule2 = kmalloc(sizeof(struct rule), GFP_KERNEL);
-    rule2->type = execve;
-    rule2->data.execve.argc = 2;
-    memset(rule2->data.execve.binary_path, 0, sizeof(rule2->data.execve.binary_path));
-    memset(rule2->data.execve.full_command, 0, sizeof(rule2->data.execve.full_command));
-    strncpy(rule2->data.execve.binary_path, "rule 2 no execve, uid, prevention", sizeof(rule2->data.execve.binary_path));
-    rule2->data.execve.gid = 99;
-
-    struct rule * rule3 = kmalloc(sizeof(struct rule), GFP_KERNEL);
-    rule3->type = execve;
-    memset(rule3->data.execve.binary_path, 0, sizeof(rule3->data.execve.binary_path));
-    memset(rule3->data.execve.full_command, 0, sizeof(rule3->data.execve.full_command));
-    strncpy(rule3->data.execve.full_command, "rule 3 has only full_command", sizeof(rule3->data.execve.full_command));
-
-    struct rule * rule4 = kmalloc(sizeof(struct rule), GFP_KERNEL);
-    rule4->type = 3;
-
-    add_rule(rule1);
-    add_rule(rule2);
-    print_rules();
-    add_rule(rule3);
-    add_rule(rule4);
-    print_rules();
-*/
