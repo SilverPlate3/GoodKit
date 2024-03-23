@@ -44,7 +44,6 @@ int string_compare_with_wildcards(const char *wild, const char *string)
   return !*wild;
 }
 
-
 int join_strings_from_user(const char __user *const __user *ups, const char *delim, char *buff, size_t bufcap)
 {
     int index = 0;
@@ -55,39 +54,22 @@ int join_strings_from_user(const char __user *const __user *ups, const char *del
         return index;
     }
 
-    if (copy_from_user(&up, ups, sizeof up))
+    while(copy_from_user(&up, ups + index, sizeof(up)) == 0)
     {
-        goto join_strings_from_user_exit;
-    }
-        
-    if (strncpy_from_user(buff, up, bufcap) <= 0)
-    {
-        goto join_strings_from_user_exit;
-    }
-
-    index = 1;
-    if (copy_from_user(&up, ups + index, sizeof up))
-    {
-        index = 0;
-        goto join_strings_from_user_exit;
-    }
-
-    while (up) {
-        strlcat(buff, delim, bufcap);
-        if (strncpy_from_user(tmp, up, sizeof tmp) <= 0)
+        memset(tmp, 0, bufcap);
+        if (strncpy_from_user(tmp, up, strnlen_user(up, bufcap)) <= 0)
         {
-            index = 0;
             goto join_strings_from_user_exit;
+        }
+        if(index > 0)
+        {
+            strlcat(buff, delim, bufcap);
         }
 
         strlcat(buff, tmp, bufcap);
-        index += 1;
-        if (copy_from_user(&up, ups + index, sizeof up))
-        {
-            index = 0;
-            goto join_strings_from_user_exit;
-        }
+        ++index;
     }
+
 
 join_strings_from_user_exit:
     kfree(tmp);
