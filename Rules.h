@@ -11,7 +11,7 @@
 
 enum rule_type
 {
-    execve
+    execve_rule_type
 };
 
 struct execve_rule
@@ -35,7 +35,7 @@ struct rule
     } data;
 };
 
-#ifdef CONFIG_KPROBES
+#ifdef CONFIG_KPROBES // TODO: Change this macro to a more standard macro for this check. __KERNEL__ 
 
 struct rules_list
 {

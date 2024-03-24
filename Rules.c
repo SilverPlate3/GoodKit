@@ -7,6 +7,7 @@
 
 LIST_HEAD(rules_list_head);
 
+// TODO: Make the critical section smaller. Only list_add_tail should be in the critical section.
 static int add_rule_raw(struct rule *rule)
 {
     struct rules_list * new_node = kmalloc(sizeof(struct rules_list), GFP_KERNEL);
@@ -16,7 +17,7 @@ static int add_rule_raw(struct rule *rule)
         return ENOMEM;
     }
 
-    if (rule->type == execve)
+    if (rule->type == execve_rule_type)
     {
         memset(new_node->rule.data.execve.binary_path, 0, PATH_MAX);
         memset(new_node->rule.data.execve.full_command, 0, PATH_MAX);
@@ -43,7 +44,7 @@ static void print_rules_raw(void)
     struct rules_list *temp;
     list_for_each_entry(temp, &rules_list_head, list) 
     {
-        if(temp->rule.type == execve)
+        if(temp->rule.type == execve_rule_type)
         {
             pr_info("\n-------- execve rule -----------\nbinary_path: %s\nfull_command: %s\nuid: %d\ngid: %d\nargc: %d\n prevention: %d\n",
                     temp->rule.data.execve.binary_path,
@@ -65,7 +66,7 @@ static void delete_rules_raw(void)
     struct rules_list *temp, *next;
     list_for_each_entry_safe(temp, next, &rules_list_head, list) 
     {
-        if(temp->rule.type == execve)
+        if(temp->rule.type == execve_rule_type)
         {
             pr_info("\n------- deleting execve rule --------\nbinary_path: %s\nfull_command: %s\nuid: %d\ngid: %d\nargc: %d\nprevention: %d\n",
             temp->rule.data.execve.binary_path,
@@ -142,7 +143,7 @@ static struct rule * does_event_match_rule_raw(const execve_event *event)
     struct rules_list *temp;
     list_for_each_entry(temp, &rules_list_head, list) 
     {
-        if(temp->rule.type == execve)
+        if(temp->rule.type == execve_rule_type)
         {
             if(is_execve_event_match_rule(event, &temp->rule.data.execve))
             {
