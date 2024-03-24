@@ -20,7 +20,7 @@ long good_kit_rules_ioctl_main_callback(struct file *file, unsigned int ioctl_nu
         pr_alert("good_kit_rules_ioctl_main_callback - file is already open\n");
         return -EBUSY; 
     }
-
+    
     int rv = 0;
     switch (ioctl_num) 
     {

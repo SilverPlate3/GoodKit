@@ -1,6 +1,7 @@
 #include "ExecveEvent.h"
 #include "IoctlContracts.h"
 #include "RulesIoctl.h"
+#include "Alert.h"
 
 #include <linux/module.h> 
 #include <linux/limits.h>
@@ -35,6 +36,20 @@ static asmlinkage long our_sys_execve(const struct pt_regs *regs)
     {
         goto call_original_execve;
     }
+    
+    // TODO: Once async - fix this up and remove check_if_prevention
+    // TODO: encapsulate create_alert_execve & send_alert in alert()
+    struct alert* alert = create_alert_execve(rule, event);
+    kfree(event);
+    if(!alert)
+    {
+        goto check_if_prevention;
+    }
+    send_alert(alert);
+
+    kfree(alert);
+    
+check_if_prevention:
     if(rule->data.execve.prevention == 1)
     {
         goto execve_prevention;
@@ -95,6 +110,11 @@ static int __init good_kit_init(void)
     {
         return -1; 
     }
+
+    if(!netlink_register())
+    {
+        return -1;
+    }
     
     disable_write_protection(); 
     original_execve = (void *)sys_call_table_stolen[__NR_execve];
@@ -116,6 +136,7 @@ static void __exit good_kit_exit(void)
 
     delete_rules();
     deregister_rules_device();
+    netlink_unregister();
 }
 
 module_init(good_kit_init); 
