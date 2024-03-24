@@ -26,3 +26,4 @@ clean:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 	-rmmod mymodule
 	-rm -f $(PWD)/UserSpace/$(USER_SPACE_TARGET)
+	-pkill -9 $(USER_SPACE_TARGET)
