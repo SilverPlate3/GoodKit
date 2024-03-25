@@ -38,18 +38,8 @@ static asmlinkage long our_sys_execve(const struct pt_regs *regs)
     }
     
     // TODO: Once async - fix this up and remove check_if_prevention
-    // TODO: encapsulate create_alert_execve & send_alert in alert()
-    struct alert* alert = create_alert_execve(rule, event);
-    kfree(event);
-    if(!alert)
-    {
-        goto check_if_prevention;
-    }
-    send_alert(alert);
+    execve_alert(rule, event);
 
-    kfree(alert);
-    
-check_if_prevention:
     if(rule->data.execve.prevention == 1)
     {
         goto execve_prevention;

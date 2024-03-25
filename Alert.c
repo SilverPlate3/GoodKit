@@ -7,7 +7,7 @@
 DEFINE_MUTEX(netlink_pipe_mutex);
 struct sock *nl_sk = NULL;
 
-struct alert* create_alert_execve(struct rule *rule, execve_event * execve)
+static struct alert* create_alert_execve(struct rule *rule, execve_event * execve)
 {
     struct alert *alert = kmalloc(sizeof(struct alert), GFP_KERNEL);
     if(!alert)
@@ -30,7 +30,7 @@ static int thread_safe_nlmsg_unicast(struct sock *sk, struct sk_buff *skb, u32 p
     return rv;
 }
 
-void send_alert(struct alert *alert)
+static void send_alert(struct alert *alert)
 {
     int msg_size = sizeof(struct alert);
 
@@ -47,6 +47,16 @@ void send_alert(struct alert *alert)
     if(thread_safe_nlmsg_unicast(nl_sk, skb_out, NETLINK_PORT_ID) < 0)
     {
         pr_info("nlmsg_unicast failed. Alert wasn't sent\n");
+    }
+}
+
+void execve_alert(struct rule *rule, execve_event * execve)
+{
+    struct alert* alert = create_alert_execve(rule, execve);
+    if(alert)
+    {
+        send_alert(alert);
+        kfree(alert);
     }
 }
 

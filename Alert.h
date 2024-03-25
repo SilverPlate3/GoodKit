@@ -16,9 +16,7 @@ struct alert
 
 #ifdef __KERNEL__
 
-struct alert* create_alert_execve(struct rule *rule, execve_event * execve);
-
-void send_alert(struct alert *alert);
+void execve_alert(struct rule *rule, execve_event * execve);
 
 int netlink_register(void);
 
