@@ -35,11 +35,13 @@ static asmlinkage long our_sys_execve(const struct pt_regs *regs)
     struct rule * rule = does_event_match_rule(event);
     if(!rule)
     {
+        kfree(event);
         goto call_original_execve;
     }
     
     // TODO: Once async - fix this up and remove check_if_prevention
     execve_alert(rule, event);
+    kfree(event);
 
     if(rule->data.execve.prevention == 1)
     {
