@@ -14,7 +14,7 @@ struct alert
     } event;
 };
 
-#ifdef CONFIG_KPROBES // TODO: Change this macro to a more standard macro for this check. __KERNEL__ 
+#ifdef __KERNEL__ // TODO: Change this macro to a more standard macro for this check. __KERNEL__ 
 
 struct alert* create_alert_execve(struct rule *rule, execve_event * execve);
 

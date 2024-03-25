@@ -35,7 +35,7 @@ struct rule
     } data;
 };
 
-#ifdef CONFIG_KPROBES // TODO: Change this macro to a more standard macro for this check. __KERNEL__ 
+#ifdef __KERNEL__ // TODO: Change this macro to a more standard macro for this check. __KERNEL__ 
 
 struct rules_list
 {
