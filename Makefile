@@ -1,5 +1,5 @@
 obj-m += mymodule.o
-mymodule-objs := main.o StringUtils.o ExecveEvent.o Rules.o RulesIoctl.o Alert.o Netlink/Netlink.o
+mymodule-objs := main.o StringUtils.o ExecveEvent.o Rules.o RulesIoctl.o Alert.o Netlink/Netlink.o ThreadManagment/ThreadManagment.o
 
 PWD := $(CURDIR)
 USER_SPACE_TARGET := user_app
@@ -23,7 +23,7 @@ all: USER_SPACE KMOD
 
 
 clean:
+	-pkill -9 $(USER_SPACE_TARGET)
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 	-rmmod mymodule
 	-rm -f $(PWD)/UserSpace/$(USER_SPACE_TARGET)
-	-pkill -9 $(USER_SPACE_TARGET)

@@ -3,6 +3,7 @@
 #include "RulesIoctl.h"
 #include "Alert.h"
 #include "Netlink/Netlink.h"
+#include "ThreadManagment/ThreadManagment.h"
 
 #include <linux/module.h> 
 #include <linux/limits.h>
@@ -91,7 +92,6 @@ static void disable_write_protection(void)
 
 static int __init good_kit_init(void) 
 {
-    pr_info("9------------------------------\n");
     sys_call_table_stolen = acquire_sys_call_table();
     if (!sys_call_table_stolen) 
     {
@@ -108,6 +108,8 @@ static int __init good_kit_init(void)
     {
         return -1;
     }
+
+    init_global_alert_threads_tracker();
     
     disable_write_protection(); 
     original_execve = (void *)sys_call_table_stolen[__NR_execve];
@@ -120,16 +122,29 @@ static int __init good_kit_init(void)
 
 static void __exit good_kit_exit(void) 
 {
+    pr_info("good_kit cleanup start\n");
     if (!sys_call_table_stolen) 
         return; 
 
     disable_write_protection(); 
     sys_call_table_stolen[__NR_execve] = (unsigned long *)original_execve; 
     enable_write_protection(); 
+    pr_info("Set original syscalls\n");
+
+    ensure_no_alert_threads_are_running();
+    pr_info("Set original syscalls\n");
+
+    kfree(alert_threads_tracker);
+    pr_info("Freed alert_threads_tracker\n");
 
     delete_rules();
+    pr_info("Deleted rules\n");
+
     deregister_rules_device();
+    pr_info("Deregistered rules device\n");
+
     netlink_unregister();
+    pr_info("Unregistered netlink\n");
 }
 
 module_init(good_kit_init); 

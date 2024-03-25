@@ -1,6 +1,9 @@
 #include "Alert.h"
 #include "Netlink/Netlink.h"
 #include "Netlink/NetlinkSettings.h"
+#include "ThreadManagment/ThreadManagment.h"
+
+#include <linux/kthread.h> 
 
 static struct alert* create_alert_execve(struct rule *rule, execve_event * execve)
 {
@@ -37,12 +40,36 @@ static void send_alert(struct alert *alert)
     }
 }
 
+static int async_execve_alert(void *arg)
+{
+    atomic_inc(&(alert_threads_tracker->thread_count));
+    struct alert *alert = (struct alert *)arg;
+    send_alert(alert);
+    kfree(alert);
+    int before_dec = atomic_read(&alert_threads_tracker->thread_count);
+    atomic_dec(&alert_threads_tracker->thread_count);
+
+    if(before_dec <= 1)
+    {
+        wake_up(&alert_threads_tracker->wq);
+    }
+    return 0;
+}
+
 void execve_alert(struct rule *rule, execve_event * execve)
 {
     struct alert* alert = create_alert_execve(rule, execve);
-    if(alert)
+    if(!alert)
     {
-        send_alert(alert);
-        kfree(alert);
+        return;
     }
+
+    struct task_struct *thread = kthread_create(async_execve_alert, alert, "execve_alert_%s", execve->full_command); 
+    if(IS_ERR(thread))
+    {
+        pr_alert("Error creating thread: 'execve_alert_%s'", execve->full_command);
+        kfree(alert);
+        return;
+    }
+    wake_up_process(thread);
 }
