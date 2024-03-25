@@ -2,6 +2,7 @@
 #include "IoctlContracts.h"
 #include "RulesIoctl.h"
 #include "Alert.h"
+#include "Netlink/Netlink.h"
 
 #include <linux/module.h> 
 #include <linux/limits.h>

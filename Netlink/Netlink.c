@@ -1,4 +1,6 @@
 #include "Netlink.h"
+#include "NetlinkSettings.h"
+
 #include <linux/netlink.h>
 
 static DEFINE_MUTEX(netlink_pipe_mutex);

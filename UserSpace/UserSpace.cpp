@@ -1,5 +1,6 @@
 #include "../IoctlContracts.h"
 #include "../Alert.h"
+#include "../Netlink/NetlinkSettings.h"
 
 #include <sys/ioctl.h>
 #include <iostream>

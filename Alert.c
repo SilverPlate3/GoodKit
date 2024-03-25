@@ -1,6 +1,6 @@
 #include "Alert.h"
-#include "Netlink.h"
-#include "NetlinkSettings.h"
+#include "Netlink/Netlink.h"
+#include "Netlink/NetlinkSettings.h"
 
 static struct alert* create_alert_execve(struct rule *rule, execve_event * execve)
 {
