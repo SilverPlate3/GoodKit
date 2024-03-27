@@ -1,28 +1,10 @@
 #include "ExecveEvent.h"
 #include "StringUtils.h"
+#include "EventCommon.h"
 
 #include <linux/cred.h> /* For current_uid() */ 
 #include <linux/uidgid.h> /* For __kuid_val() */ 
 #include <linux/slab.h>
-
-static char * get_binary_path(const char __user *__filename)
-{
-    int filename_len = strnlen_user(__filename, PATH_MAX);
-    char *filename = kmalloc(filename_len, GFP_KERNEL);
-    if (unlikely(!filename))
-    {
-        pr_info("Failed to allocate memory for filename\n");
-        return NULL;
-    }
-    if(copy_from_user(filename, __filename, filename_len))
-    {
-        pr_info("Failed to copy filename from user space\n");
-        kfree(filename);
-        return NULL;
-    }
-    filename[filename_len - 1] = '\0'; 
-    return filename;
-}
 
 struct full_command_data 
 {
