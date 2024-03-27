@@ -7,38 +7,6 @@
 
 LIST_HEAD(rules_list_head);
 
-// TODO: Make the critical section smaller. Only list_add_tail should be in the critical section.
-static int add_rule_raw(struct rule *rule)
-{
-    struct rules_list * new_node = kmalloc(sizeof(struct rules_list), GFP_KERNEL);
-    if(unlikely(new_node == NULL))
-    {
-        pr_alert("failled to allocate new rule\n");
-        return ENOMEM;
-    }
-
-    if (rule->type == execve_rule_type)
-    {
-        memset(new_node->rule.data.execve.binary_path, 0, PATH_MAX);
-        memset(new_node->rule.data.execve.full_command, 0, PATH_MAX);
-        strncpy(new_node->rule.data.execve.binary_path, rule->data.execve.binary_path, PATH_MAX);
-        strncpy(new_node->rule.data.execve.full_command, rule->data.execve.full_command, PATH_MAX);
-        new_node->rule.data.execve.uid = rule->data.execve.uid;
-        new_node->rule.data.execve.gid = rule->data.execve.gid;
-        new_node->rule.data.execve.argc = rule->data.execve.argc;
-        new_node->rule.data.execve.prevention = rule->data.execve.prevention;
-    }
-    else
-    {
-        pr_alert("unsported rule type\n");
-        kfree(new_node);
-        return EINVAL;
-    }
-
-    list_add_tail(&new_node->list, &rules_list_head);
-    return 0;
-}
-
 static void print_rules_raw(void)
 {
     struct rules_list *temp;
@@ -159,16 +127,40 @@ static struct rule * does_event_match_rule_raw(const execve_event *event)
     return NULL;
 }
 
-static DEFINE_RWLOCK(rules_list_rw_lock); 
+static DEFINE_RWLOCK(rules_list_rw_lock);
 
 int add_rule(struct rule *rule)
 {
-    int ret;
+    struct rules_list * new_node = kmalloc(sizeof(struct rules_list), GFP_KERNEL);
+    if(unlikely(new_node == NULL))
+    {
+        pr_alert("failled to allocate new rule\n");
+        return ENOMEM;
+    }
+
+    if (rule->type == execve_rule_type)
+    {
+        memset(new_node->rule.data.execve.binary_path, 0, PATH_MAX);
+        memset(new_node->rule.data.execve.full_command, 0, PATH_MAX);
+        strncpy(new_node->rule.data.execve.binary_path, rule->data.execve.binary_path, PATH_MAX);
+        strncpy(new_node->rule.data.execve.full_command, rule->data.execve.full_command, PATH_MAX);
+        new_node->rule.data.execve.uid = rule->data.execve.uid;
+        new_node->rule.data.execve.gid = rule->data.execve.gid;
+        new_node->rule.data.execve.argc = rule->data.execve.argc;
+        new_node->rule.data.execve.prevention = rule->data.execve.prevention;
+    }
+    else
+    {
+        pr_alert("unsported rule type\n");
+        kfree(new_node);
+        return EINVAL;
+    }
+
     unsigned long flags; 
     write_lock_irqsave(&rules_list_rw_lock, flags); 
-    ret = add_rule_raw(rule);
+    list_add_tail(&new_node->list, &rules_list_head);
     write_unlock_irqrestore(&rules_list_rw_lock, flags); 
-    return ret;
+    return 0;
 }
 
 void print_rules(void)
