@@ -3,7 +3,7 @@
 #include <linux/uaccess.h> 
 #include <linux/slab.h>
 
-char * get_binary_path(const char __user *__filename)
+char * get_path_from_user_space(const char __user *__filename)
 {
     int filename_len = strnlen_user(__filename, PATH_MAX);
     char *filename = kmalloc(filename_len, GFP_KERNEL);

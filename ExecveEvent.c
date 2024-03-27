@@ -50,7 +50,7 @@ execve_event * create_execve_event(const struct pt_regs *regs)
     event->gid = __kgid_val(current_gid());
     
     const char __user *__filename = (const char __user *)regs->di;
-    char * binary_path = get_binary_path(__filename);
+    char * binary_path = get_path_from_user_space(__filename);
     if(binary_path)
     {
         strncpy(event->binary_path, binary_path, strlen(binary_path));
