@@ -1,6 +1,6 @@
 #include "ExecveEvent.h"
 #include "IoctlContracts.h"
-#include "RulesIoctl.h"
+#include "Rules/RulesIoctl.h"
 #include "Alert.h"
 #include "Netlink/Netlink.h"
 #include "ThreadManagment/ThreadManagment.h"
@@ -40,7 +40,6 @@ static asmlinkage long our_sys_execve(const struct pt_regs *regs)
         goto call_original_execve;
     }
     
-    // TODO: Once async - fix this up and remove check_if_prevention
     execve_alert(rule, event);
     kfree(event);
 
