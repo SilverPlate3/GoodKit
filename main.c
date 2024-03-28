@@ -4,11 +4,13 @@
 #include "Alert.h"
 #include "Netlink/Netlink.h"
 #include "ThreadManagment/ThreadManagment.h"
+#include "EventCommon.h"
 
 #include <linux/module.h> 
 #include <linux/limits.h>
 #include <linux/sched.h> 
 #include <linux/kprobes.h> 
+#include <linux/string_helpers.h>
 
 #ifndef CONFIG_KPROBES
 #error "CONFIG_KPROBES is not defined but is required."
@@ -23,6 +25,8 @@
 
 static unsigned long **sys_call_table_stolen; 
 static asmlinkage long (*original_execve)(const struct pt_regs *);
+static asmlinkage long (*original_open)(const struct pt_regs *);
+static asmlinkage long (*original_openat)(const struct pt_regs *);
 
 static asmlinkage long our_sys_execve(const struct pt_regs *regs) 
 {
@@ -53,6 +57,60 @@ call_original_execve:
 
 execve_prevention:
         return -EPERM;
+}
+
+static asmlinkage long our_sys_open(const struct pt_regs *regs) 
+{
+    const char __user *__filename = (const char __user *)regs->di;
+    const int flags = regs->si;
+    const int mode = regs->dx;
+    const char * filename = get_path_from_user_space(__filename);
+    
+    if(strcmp(filename, "/tmp/1") == 0)
+    {
+        pr_info("[open] filename: '%s', flags: %d, mode: %i\n", filename, flags, mode);
+    }
+
+call_original_open:
+    return original_open(regs);
+}
+
+static asmlinkage long our_sys_openat(const struct pt_regs *regs) 
+{
+    int fd = regs->di;
+    const char __user *__filename = (const char __user *)regs->si;
+    const int flags = regs->dx;
+    const int mode = regs->cx;
+    const char * filename = get_path_from_user_space(__filename);
+
+
+    char * exepathp;
+
+    struct file * exe_file;
+    struct mm_struct *mm;
+    char exe_path [1000];
+
+    //straight up stolen from get_mm_exe_file   
+    mm = get_task_mm(current); // TODO: check that mm is valid
+    mmap_read_lock(mm);
+    exe_file = mm->exe_file;
+    if (exe_file) 
+    {
+        get_file(exe_file);
+    }
+    mmap_read_unlock(mm);
+    mmput(mm);
+
+    exepathp = d_path( &(exe_file->f_path), exe_path, 1000*sizeof(char) );
+    char * cmd = kstrdup_quotable_cmdline(current, GFP_KERNEL);
+    if(cmd)
+    {
+        pr_info("cmd: '%s'\n", cmd);
+        kfree(cmd);
+    }
+
+call_original_openat:
+    return original_openat(regs);
 }
 
 static unsigned long **acquire_sys_call_table(void) 
@@ -112,7 +170,11 @@ static int __init good_kit_init(void)
     
     disable_write_protection(); 
     original_execve = (void *)sys_call_table_stolen[__NR_execve];
+    original_open = (void *)sys_call_table_stolen[__NR_open];
+    original_openat = (void *)sys_call_table_stolen[__NR_openat];
     sys_call_table_stolen[__NR_execve] = (unsigned long *)our_sys_execve; 
+    sys_call_table_stolen[__NR_open] = (unsigned long *)our_sys_open; 
+    sys_call_table_stolen[__NR_openat] = (unsigned long *)our_sys_openat;
     enable_write_protection(); 
 
     pr_info("Finished hooking syscall table\n");
@@ -127,6 +189,8 @@ static void __exit good_kit_exit(void)
 
     disable_write_protection(); 
     sys_call_table_stolen[__NR_execve] = (unsigned long *)original_execve; 
+    sys_call_table_stolen[__NR_open] = (unsigned long *)original_open; 
+    sys_call_table_stolen[__NR_openat] = (unsigned long *)original_openat;
     enable_write_protection(); 
     pr_info("Set original syscalls\n");
 

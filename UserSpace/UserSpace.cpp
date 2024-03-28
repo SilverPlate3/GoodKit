@@ -25,6 +25,11 @@ int main()
         return -1;
     }
 
+    fd = open("/tmp/1", O_RDONLY);
+    fd = openat(4, "/tmp/1", O_RDONLY);
+    fd = open("/tmp/1", O_RDONLY);
+    return 0;
+
     struct rule rule1 = {};
     rule1.type = execve_rule_type;
     strncpy(rule1.data.execve.binary_path, DEFAULT_BINARY_PATH, sizeof(rule1.data.execve.full_command));
