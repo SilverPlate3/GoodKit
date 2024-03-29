@@ -37,7 +37,7 @@ static asmlinkage long our_sys_execve(const struct pt_regs *regs)
         goto call_original_execve;
     }
 
-    struct rule * rule = does_event_match_rule(event);
+    struct rule * rule = does_execve_event_match_rule(event);
     if(!rule)
     {
         kfree(event);
@@ -98,6 +98,7 @@ static asmlinkage long our_sys_openat(const struct pt_regs *regs)
     {
         get_file(exe_file);
     }
+
     mmap_read_unlock(mm);
     mmput(mm);
 

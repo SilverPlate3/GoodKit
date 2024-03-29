@@ -11,6 +11,7 @@
 
 enum rule_type
 {
+    open_rule_type,
     execve_rule_type
 };
 
@@ -24,13 +25,27 @@ struct execve_rule
     int prevention;
 };
 
+struct open_rule
+{
+    char binary_path[PATH_MAX];
+    char full_command[PATH_MAX];
+    char target_path[PATH_MAX];
+    int uid;
+    int gid;
+    int flags;
+    int mode;
+    int prevention;
+};
+
 typedef struct execve_rule execve_event;
+typedef struct open_rule open_event;
 
 struct rule 
 {
     enum rule_type type;
     union
     {
+        struct open_rule open;
         struct execve_rule execve;
     } data;
 };
@@ -49,6 +64,6 @@ void print_rules(void);
 
 void delete_rules(void);
 
-struct rule * does_event_match_rule(const execve_event *event);
+struct rule * does_execve_event_match_rule(const execve_event *event);
 
 #endif
