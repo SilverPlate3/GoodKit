@@ -20,9 +20,6 @@
 #error "CONFIG_ARCH_HAS_SYSCALL_WRAPPER is not defined but is required."
 #endif
 
-#define MKVAR(Type, Name, From) Type Name = (Type)(From);
-#define MAX_ARG_LENGTH 1024 // TODO: is this really needed? as 
-
 static unsigned long **sys_call_table_stolen; 
 static asmlinkage long (*original_execve)(const struct pt_regs *);
 static asmlinkage long (*original_open)(const struct pt_regs *);
