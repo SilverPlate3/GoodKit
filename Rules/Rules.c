@@ -129,6 +129,33 @@ static struct rule * does_execve_event_match_rule_raw(const execve_event *event)
 
 static DEFINE_RWLOCK(rules_list_rw_lock);
 
+static void build_execve_rule(struct rule *rule, struct rules_list * new_node)
+{
+    memset(new_node->rule.data.execve.binary_path, 0, PATH_MAX);
+    memset(new_node->rule.data.execve.full_command, 0, PATH_MAX);
+    strncpy(new_node->rule.data.execve.binary_path, rule->data.execve.binary_path, PATH_MAX);
+    strncpy(new_node->rule.data.execve.full_command, rule->data.execve.full_command, PATH_MAX);
+    new_node->rule.data.execve.uid = rule->data.execve.uid;
+    new_node->rule.data.execve.gid = rule->data.execve.gid;
+    new_node->rule.data.execve.argc = rule->data.execve.argc;
+    new_node->rule.data.execve.prevention = rule->data.execve.prevention;
+}
+
+static void build_open_rule(struct rule *rule, struct rules_list * new_node)
+{
+    memset(new_node->rule.data.open.binary_path, 0, PATH_MAX);
+    memset(new_node->rule.data.open.full_command, 0, PATH_MAX);
+    memset(new_node->rule.data.open.target_path, 0, PATH_MAX);
+    strncpy(new_node->rule.data.open.binary_path, rule->data.open.binary_path, PATH_MAX);
+    strncpy(new_node->rule.data.open.full_command, rule->data.open.full_command, PATH_MAX);
+    strncpy(new_node->rule.data.open.target_path, rule->data.open.target_path, PATH_MAX);
+    new_node->rule.data.open.uid = rule->data.open.uid;
+    new_node->rule.data.open.gid = rule->data.open.gid;
+    new_node->rule.data.open.flags = rule->data.open.flags;
+    new_node->rule.data.open.mode = rule->data.open.mode;
+    new_node->rule.data.open.prevention = rule->data.open.prevention;
+}
+
 int add_rule(struct rule *rule)
 {
     struct rules_list * new_node = kmalloc(sizeof(struct rules_list), GFP_KERNEL);
@@ -140,14 +167,11 @@ int add_rule(struct rule *rule)
 
     if (rule->type == execve_rule_type)
     {
-        memset(new_node->rule.data.execve.binary_path, 0, PATH_MAX);
-        memset(new_node->rule.data.execve.full_command, 0, PATH_MAX);
-        strncpy(new_node->rule.data.execve.binary_path, rule->data.execve.binary_path, PATH_MAX);
-        strncpy(new_node->rule.data.execve.full_command, rule->data.execve.full_command, PATH_MAX);
-        new_node->rule.data.execve.uid = rule->data.execve.uid;
-        new_node->rule.data.execve.gid = rule->data.execve.gid;
-        new_node->rule.data.execve.argc = rule->data.execve.argc;
-        new_node->rule.data.execve.prevention = rule->data.execve.prevention;
+        build_execve_rule(rule, new_node);
+    }
+    else if(rule->type == execve_rule_type)
+    {
+        build_open_rule(rule, new_node);
     }
     else
     {
