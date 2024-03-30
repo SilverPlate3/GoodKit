@@ -22,6 +22,18 @@ static void print_rules_raw(void)
                     temp->rule.data.execve.argc,
                     temp->rule.data.execve.prevention);
         }
+        else if(temp->rule.type == open_rule_type)
+        {
+            pr_info("\n-------- open rule -----------\nbinary_path: %s\nfull_command: %s\ntarget_path: %s\nuid: %d\ngid: %d\nflags: %d\nmode: %d\n prevention: %d\n",
+                    temp->rule.data.open.binary_path,
+                    temp->rule.data.open.full_command,
+                    temp->rule.data.open.target_path,
+                    temp->rule.data.open.uid,
+                    temp->rule.data.open.gid,
+                    temp->rule.data.open.flags,
+                    temp->rule.data.open.mode,
+                    temp->rule.data.open.prevention);
+        }
         else
         {
             pr_alert("unsuported rule type\n");
