@@ -64,9 +64,7 @@ static asmlinkage long our_sys_open(const struct pt_regs *regs)
         pr_info("create_open_event failed\n");
         goto call_original_open;
     }
-    
-    pr_info("--------------- open_event ------------\nbinary_path: '%s'\nfull_command: '%s'\ntarget_path: '%s'\nuid: %d\ngid: %d\nflags: %d\nmode: %d", event->binary_path, event->full_command, event->target_path, event->uid, event->gid, event->flags, event->mode);
-    kfree(event);
+     kfree(event);
 
 call_original_open:
     return original_open(regs);
@@ -74,37 +72,13 @@ call_original_open:
 
 static asmlinkage long our_sys_openat(const struct pt_regs *regs) 
 {
-     int fd = regs->di;
-     const char __user *__filename = (const char __user *)regs->si;
-     const int flags = regs->dx;
-     const int mode = regs->cx;
-     const char * filename = get_path_from_user_space(__filename);
-
-     char * exepathp;
-
-     struct file * exe_file;
-     struct mm_struct *mm;
-     char exe_path [1000];
-
-     //straight up stolen from get_mm_exe_file   
-     mm = get_task_mm(current); // TODO: check that mm is valid
-     mmap_read_lock(mm);
-     exe_file = mm->exe_file;
-     if (exe_file) 
-     {
-         get_file(exe_file);
-     }
-
-     mmap_read_unlock(mm);
-     mmput(mm);
-
-     exepathp = d_path( &(exe_file->f_path), exe_path, 1000*sizeof(char) );
-     char * cmd = kstrdup_quotable_cmdline(current, GFP_KERNEL);
-     if(cmd)
-     {
-         pr_info("cmd: '%s'\n", cmd);
-         kfree(cmd);
-     }
+    open_event * event = create_openat_event(regs);
+    if(unlikely(!event))
+    {
+        pr_info("create_openat_event failed\n");
+        goto call_original_openat;
+    }
+    kfree(event);
 
 call_original_openat:
     return original_openat(regs);

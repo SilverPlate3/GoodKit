@@ -6,10 +6,12 @@
 #include <linux/slab.h>
 #include <linux/mm.h>
 #include <linux/string_helpers.h>
+#include <linux/fdtable.h>
+#include <linux/file.h>
 
 char * gut_current_task_binary_path(void)
 {
-    char exe_path [PATH_MAX];
+    char exe_path [PATH_MAX]; // TODO: Dynamic allocation
 
     struct mm_struct * mm = get_task_mm(current);
     if(!mm)
@@ -47,7 +49,7 @@ char * gut_current_task_binary_path(void)
     return returned_binary_path;
 }
 
-open_event * create_open_event(const struct pt_regs *regs)
+static open_event * open_event_defaults(const struct pt_regs *regs)
 {
     open_event *event = kmalloc(sizeof(open_event), GFP_KERNEL);
     if (unlikely(!event))
@@ -61,17 +63,6 @@ open_event * create_open_event(const struct pt_regs *regs)
 
     event->uid = __kuid_val(current_uid());
     event->gid = __kgid_val(current_gid());
-    
-    const char __user *__filename = (const char __user *)regs->di;
-    char * target_path = get_path_from_user_space(__filename);
-    if(target_path)
-    {
-        strncpy(event->target_path, target_path, strlen(target_path));
-        kfree(target_path);
-    }
-
-    event->flags = regs->si;
-    event->mode = regs->dx;
 
     char * binary_path = gut_current_task_binary_path();
     if(binary_path)
@@ -87,5 +78,97 @@ open_event * create_open_event(const struct pt_regs *regs)
         kfree(full_command);
     }
 
+    return event;
+}
+
+open_event * create_open_event(const struct pt_regs *regs)
+{
+    open_event *event = open_event_defaults(regs);
+    if(unlikely(!event))
+    {
+        return NULL;
+    }
+    
+    event->flags = regs->si;
+    event->mode = regs->dx;
+
+    const char __user *__filename = (const char __user *)regs->di;
+    char * target_path = get_path_from_user_space(__filename);
+    if(target_path)
+    {
+        strncpy(event->target_path, target_path, strlen(target_path));
+        kfree(target_path);
+    }
+
+    return event;
+}
+
+static struct file * get_file_from_fd(int fd)
+{
+    if(fd == AT_FDCWD)
+    {
+        return NULL;
+    }
+
+    struct fd fd_struct = __to_fd(__fdget(fd));
+    struct file *file = fd_struct.file;
+    if (!file) 
+    {
+        if(fd > 0 && fd < NR_OPEN_DEFAULT)
+        {
+            file = current->files->fd_array[fd];
+        }
+    }
+    
+    return file;
+}
+
+static void get_dir_path_from_fd(int fd, char * output)
+{
+    spin_lock(&current->files->file_lock);
+    struct file * file = get_file_from_fd(fd);
+    if(!file)
+    {
+        spin_unlock(&current->files->file_lock);
+        return;
+    }
+    
+    struct path * dir_path = &file->f_path;
+    path_get(dir_path);
+    spin_unlock(&current->files->file_lock);
+
+    char *tmp = kmalloc(PATH_MAX, GFP_KERNEL);
+    if(unlikely(!tmp))
+    {
+        path_put(dir_path);
+        return;
+    }
+
+    char *dir_path_name = d_path(dir_path, tmp, PATH_MAX);
+    path_put(dir_path);
+    if (!IS_ERR(dir_path_name)) 
+    {
+        strncpy(output, dir_path_name, strlen(dir_path_name));
+        strcat(output, "/");
+    }
+    kfree(tmp);
+}
+
+open_event * create_openat_event(const struct pt_regs *regs)
+{
+    open_event *event = open_event_defaults(regs);
+    if(unlikely(!event))
+    {
+        return NULL;
+    }
+
+    int fd = regs->di;
+    get_dir_path_from_fd(fd, event->target_path);
+    const char __user *__filename = (const char __user *)regs->si;
+    const char * filename = get_path_from_user_space(__filename);
+    if(filename)
+    {
+        strcat(event->target_path, filename);
+    }
     return event;
 }
