@@ -128,10 +128,6 @@ static struct rule * does_execve_event_match_rule_raw(const execve_event *event)
                 return &temp->rule;
             }
         }
-        else
-        {
-            pr_alert("unsuported rule type\n");
-        }
     }
 
     return NULL;

@@ -72,6 +72,17 @@ int main()
     rule4.data.execve.argc = DEFAULT_ARGC;
     rule4.data.execve.prevention = 0;
 
+    struct rule rule5 = {};
+    rule5.type = open_rule_type;
+    strncpy(rule5.data.open.binary_path, "/bin/binary.bin", sizeof(rule5.data.open.binary_path));
+    strncpy(rule5.data.open.full_command, "./binary.bin 111 222 333", sizeof(rule5.data.open.full_command));
+    strncpy(rule5.data.open.target_path, "/etc/happy life.txt", sizeof(rule5.data.open.target_path));
+    rule5.data.open.uid = 1001;
+    rule5.data.open.gid = 999;
+    rule5.data.open.flags = O_RDWR;
+    rule5.data.open.mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
+    rule5.data.open.prevention = 1;
+
     if(ioctl(fd, ADD_RULE, &rule1) < 0)
     {
         std::cout << "rule1 failed. errno: " << errno << std::endl;
@@ -90,6 +101,11 @@ int main()
     if(ioctl(fd, ADD_RULE, &rule4) < 0)
     {
         std::cout << "rule4 failed. errno: " << errno << std::endl;
+    }
+
+    if(ioctl(fd, ADD_RULE, &rule5) < 0)
+    {
+        std::cout << "rule5 failed. errno: " << errno << std::endl;
     }
 
     if(ioctl(fd, PRINT_ALL_RULLES, NULL) < 0)
