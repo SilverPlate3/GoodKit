@@ -1,0 +1,12 @@
+Must:
+1. is_open_event_matches_rule
+2. Test 1. 4 rules of execve and 4 rules of open. 2 open 2 openat.
+3. Whitelist process
+4. delete rules ioctl
+5. UserSpace
+
+
+Possible
+1. slab 
+2. Different lists for open and excve rules
+3. Cache
