@@ -7,71 +7,57 @@
 
 LIST_HEAD(rules_list_head);
 
+static void print_rule(struct rule* rule)
+{
+    if(rule->type == execve_rule_type)
+    {
+        const char * prefix = "execve_rule";
+        pr_info("\n-------- %s -----------\nbinary_path: %s\nfull_command: %s\nuid: %d\ngid: %d\nargc: %d\nprevention: %d\n",
+                prefix,
+                rule->data.execve.binary_path,
+                rule->data.execve.full_command,
+                rule->data.execve.uid,
+                rule->data.execve.gid,
+                rule->data.execve.argc,
+                rule->data.execve.prevention);
+    }
+    else if(rule->type == open_rule_type)
+    {
+        const char * prefix = "open_rule";
+        pr_info("\n-------- %s -----------\nbinary_path: %s\nfull_command: %s\ntarget_path: %s\nuid: %d\ngid: %d\nflags: %d\nmode: %d\nprevention: %d\n",
+                prefix,
+                rule->data.open.binary_path,
+                rule->data.open.full_command,
+                rule->data.open.target_path,
+                rule->data.open.uid,
+                rule->data.open.gid,
+                rule->data.open.flags,
+                rule->data.open.mode,
+                rule->data.open.prevention);
+    }
+    else
+    {
+        pr_alert("unsuported rule type\n");
+    }
+}
+
 static void print_rules_raw(void)
 {
+    pr_info("\n-------- printing rules: --------\n");
     struct rules_list *temp;
     list_for_each_entry(temp, &rules_list_head, list) 
     {
-        if(temp->rule.type == execve_rule_type)
-        {
-            pr_info("\n-------- execve rule -----------\nbinary_path: %s\nfull_command: %s\nuid: %d\ngid: %d\nargc: %d\n prevention: %d\n",
-                    temp->rule.data.execve.binary_path,
-                    temp->rule.data.execve.full_command,
-                    temp->rule.data.execve.uid,
-                    temp->rule.data.execve.gid,
-                    temp->rule.data.execve.argc,
-                    temp->rule.data.execve.prevention);
-        }
-        else if(temp->rule.type == open_rule_type)
-        {
-            pr_info("\n-------- open rule -----------\nbinary_path: %s\nfull_command: %s\ntarget_path: %s\nuid: %d\ngid: %d\nflags: %d\nmode: %d\n prevention: %d\n",
-                    temp->rule.data.open.binary_path,
-                    temp->rule.data.open.full_command,
-                    temp->rule.data.open.target_path,
-                    temp->rule.data.open.uid,
-                    temp->rule.data.open.gid,
-                    temp->rule.data.open.flags,
-                    temp->rule.data.open.mode,
-                    temp->rule.data.open.prevention);
-        }
-        else
-        {
-            pr_alert("unsuported rule type\n");
-        }
+        print_rule(&temp->rule);
     }
 }
 
 static void delete_rules_raw(void)
 {
+    pr_info("\n-------- deleting rules: --------\n");
     struct rules_list *temp, *next;
     list_for_each_entry_safe(temp, next, &rules_list_head, list) 
     {
-        if(temp->rule.type == execve_rule_type)
-        {
-            pr_info("\n------- deleting execve rule --------\nbinary_path: %s\nfull_command: %s\nuid: %d\ngid: %d\nargc: %d\nprevention: %d\n",
-            temp->rule.data.execve.binary_path,
-            temp->rule.data.execve.full_command,
-            temp->rule.data.execve.uid,
-            temp->rule.data.execve.gid,
-            temp->rule.data.execve.argc,
-            temp->rule.data.execve.prevention);
-        }
-        else if(temp->rule.type == open_rule_type)
-        {
-            pr_info("\n------- deleting open rule --------\nbinary_path: %s\nfull_command: %s\ntarget_path: %s\nuid: %d\ngid: %d\nflags: %d\nmode: %d\nprevention: %d\n",
-            temp->rule.data.open.binary_path,
-            temp->rule.data.open.full_command,
-            temp->rule.data.open.target_path,
-            temp->rule.data.open.uid,
-            temp->rule.data.open.gid,
-            temp->rule.data.open.flags,
-            temp->rule.data.open.mode,
-            temp->rule.data.open.prevention);
-        }
-        else
-        {
-            pr_alert("deleting unsuported rule type\n");
-        }
+        print_rule(&temp->rule);
         list_del(&temp->list);
         kfree(temp);
     }
@@ -155,6 +141,7 @@ static DEFINE_RWLOCK(rules_list_rw_lock);
 
 static void build_execve_rule(struct rule *rule, struct rules_list * new_node)
 {
+    new_node->rule.type = execve_rule_type;
     memset(new_node->rule.data.execve.binary_path, 0, PATH_MAX);
     memset(new_node->rule.data.execve.full_command, 0, PATH_MAX);
     strncpy(new_node->rule.data.execve.binary_path, rule->data.execve.binary_path, PATH_MAX);
@@ -167,6 +154,7 @@ static void build_execve_rule(struct rule *rule, struct rules_list * new_node)
 
 static void build_open_rule(struct rule *rule, struct rules_list * new_node)
 {
+    new_node->rule.type = open_rule_type;
     memset(new_node->rule.data.open.binary_path, 0, PATH_MAX);
     memset(new_node->rule.data.open.full_command, 0, PATH_MAX);
     memset(new_node->rule.data.open.target_path, 0, PATH_MAX);
@@ -193,7 +181,7 @@ int add_rule(struct rule *rule)
     {
         build_execve_rule(rule, new_node);
     }
-    else if(rule->type == execve_rule_type)
+    else if(rule->type == open_rule_type)
     {
         build_open_rule(rule, new_node);
     }

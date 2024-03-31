@@ -18,14 +18,14 @@ void print_alerts();
 
 int main()
 {
-    int fd2 = open("/tmp", O_RDONLY | O_DIRECTORY);
-    fd2 = openat(fd2, "1", O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-    std::cout << "openat fd2: " << fd2 << std::endl;
+    // int fd2 = open("/tmp", O_RDONLY | O_DIRECTORY);
+    // fd2 = openat(fd2, "1", O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    // std::cout << "openat fd2: " << fd2 << std::endl;
 
-    int fd3 = open("/home/ariel/Desktop/KernelDev/GoodKit", O_RDONLY | O_DIRECTORY);
-    fd3 = openat(fd3, "StringUtils.c", O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-    std::cout << "openat fd3: " << fd3 << std::endl;
-    return 0;
+    // int fd3 = open("/home/ariel/Desktop/KernelDev/GoodKit", O_RDONLY | O_DIRECTORY);
+    // fd3 = openat(fd3, "StringUtils.c", O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    // std::cout << "openat fd3: " << fd3 << std::endl;
+    // return 0;
 
     int fd = open(RULES_DEVICE_PATH, O_WRONLY);
     if(fd < 0)
@@ -87,14 +87,14 @@ int main()
         std::cout << "rule3 failed. errno: " << errno << std::endl;
     }
 
-    if(ioctl(fd, PRINT_ALL_RULLES, NULL) < 0)
-    {
-        std::cout << "PRINT_ALL_RULLES failed. errno: " << errno << std::endl;
-    }
-
     if(ioctl(fd, ADD_RULE, &rule4) < 0)
     {
         std::cout << "rule4 failed. errno: " << errno << std::endl;
+    }
+
+    if(ioctl(fd, PRINT_ALL_RULLES, NULL) < 0)
+    {
+        std::cout << "PRINT_ALL_RULLES failed. errno: " << errno << std::endl;
     }
 
     print_alerts();
@@ -153,7 +153,7 @@ void print_alerts()
         else
         {
             struct alert *alert = (struct alert *)NLMSG_DATA(nlh);
-            std::cout << "Received alert:  \nevent.execve.full_command:" << alert->event.execve.full_command << "\nrule.full_command: "<< alert->rule.data.execve.full_command << std::endl;
+            std::cout << "Received alert:  \nevent.execve.full_command:" << alert->event.execve.full_command << "\nrule.full_command: "<< alert->rule.data.execve.full_command << std::endl; // TODO: print the full event and rule
         }
 
         memset(nlh, 0, NLMSG_SPACE(sizeof(struct alert)));
