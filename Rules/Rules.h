@@ -5,9 +5,12 @@
 // default rule values
 #define DEFAULT_BINARY_PATH ""
 #define DEFAULT_FULL_COMMAND ""
+#define DEFAULT_TARGET_PATH ""
 #define DEFAULT_UID -999
 #define DEFAULT_GID -999
 #define DEFAULT_ARGC -1
+#define DEFAULT_FLAGS -1
+#define DEFAULT_MODE -1
 
 enum rule_type
 {
@@ -65,5 +68,7 @@ void print_rules(void);
 void delete_rules(void);
 
 struct rule * does_execve_event_match_rule(const execve_event *event);
+
+struct rule * does_open_event_match_rule(const open_event *event);
 
 #endif

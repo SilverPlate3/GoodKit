@@ -6,6 +6,7 @@
 #include <linux/rwlock.h> 
 
 LIST_HEAD(rules_list_head);
+static DEFINE_RWLOCK(rules_list_rw_lock);
 
 static void print_rule(struct rule* rule)
 {
@@ -67,7 +68,12 @@ static void print_matched_execve_rule(const execve_event *event, const struct ex
 {
     pr_info("execve event match rule.\nRule.binary_path: '%s' Event.binary_path: '%s'\nRule.full_command: '%s' Event.full_command: '%s'\nRule.uid: %d Event.uid: %d\nRule.gid: %d Event.gid: %d\nRule.argc: %d Event.argc: %d\n",
             execve_rule->binary_path, event->binary_path, execve_rule->full_command, event->full_command, execve_rule->uid, event->uid, execve_rule->gid, event->gid, execve_rule->argc, event->argc);
+}
 
+static void print_matched_open_rule(const open_event *event, const struct open_rule *open_rule)
+{
+    pr_info("execve event match rule.\nRule.binary_path: '%s' Event.binary_path: '%s'\nRule.full_command: '%s' Event.full_command: '%s'\nRule.target_path: '%s' Event.target_path: '%s'\nRule.uid: %d Event.uid: %d\nRule.gid: %d Event.gid: %d\nRule.flags: %d Event.flags: %d\nRule.mode: %d Event.mode: %d\n",
+            open_rule->binary_path, event->binary_path, open_rule->full_command, event->full_command, open_rule->target_path, event->target_path, open_rule->uid, event->uid, open_rule->gid, event->gid, open_rule->flags, event->flags, open_rule->mode, event->mode);
 }
 
 static int is_execve_event_match_rule(const execve_event *event, const struct execve_rule *execve_rule)
@@ -116,6 +122,68 @@ static int is_execve_event_match_rule(const execve_event *event, const struct ex
     return 1;
 }
 
+static int is_open_event_match_rule(const open_event *event, const struct open_rule *open_rule)
+{
+    if(strcmp(open_rule->binary_path, DEFAULT_BINARY_PATH) != 0)
+    {
+        if(string_compare_with_wildcards(open_rule->binary_path, event->binary_path) == 0)
+        {
+            return 0;
+        }
+    }
+
+    if(strcmp(open_rule->full_command, DEFAULT_FULL_COMMAND) != 0)
+    {
+        if(string_compare_with_wildcards(open_rule->full_command, event->full_command) == 0)
+        {
+            return 0;
+        }
+    }
+
+    if(strcmp(open_rule->target_path, DEFAULT_TARGET_PATH) != 0)
+    {
+        if(string_compare_with_wildcards(open_rule->target_path, event->target_path) == 0)
+        {
+            return 0;
+        }
+    }
+
+    if(open_rule->uid != DEFAULT_UID)
+    {
+        if(event->uid != open_rule->uid)
+        {
+            return 0;
+        }
+    }
+
+    if(open_rule->gid != DEFAULT_GID)
+    {
+        if(event->gid != open_rule->gid)
+        {
+            return 0;
+        }
+    }
+
+    if(open_rule->flags != DEFAULT_FLAGS)
+    {
+        if((event->flags & open_rule->flags) != open_rule->flags)
+        {
+            return 0;
+        }
+    }
+
+    if(open_rule->mode != DEFAULT_MODE)
+    {
+        if((event->mode & open_rule->mode) != open_rule->mode)
+        {
+            return 0;
+        }
+    }
+
+    print_matched_open_rule(event, open_rule);
+    return 1;
+}
+
 static struct rule * does_execve_event_match_rule_raw(const execve_event *event)
 {
     struct rules_list *temp;
@@ -133,7 +201,22 @@ static struct rule * does_execve_event_match_rule_raw(const execve_event *event)
     return NULL;
 }
 
-static DEFINE_RWLOCK(rules_list_rw_lock);
+static struct rule * does_open_event_match_rule_raw(const open_event *event)
+{
+    struct rules_list *temp;
+    list_for_each_entry(temp, &rules_list_head, list) 
+    {
+        if(temp->rule.type == open_rule_type)
+        {
+            if(is_open_event_match_rule(event, &temp->rule.data.open))
+            {
+                return &temp->rule;
+            }
+        }
+    }
+
+    return NULL;
+}
 
 static void build_execve_rule(struct rule *rule, struct rules_list * new_node)
 {
@@ -209,6 +292,16 @@ void delete_rules(void)
     write_lock_irqsave(&rules_list_rw_lock, flags); 
     delete_rules_raw();
     write_unlock_irqrestore(&rules_list_rw_lock, flags); 
+}
+
+struct rule * does_open_event_match_rule(const open_event *event)
+{
+    struct rule *rule;
+    unsigned long flags;
+    read_lock_irqsave(&rules_list_rw_lock, flags);
+    rule = does_open_event_match_rule_raw(event);
+    read_unlock_irqrestore(&rules_list_rw_lock, flags);
+    return rule;
 }
 
 struct rule * does_execve_event_match_rule(const execve_event *event)
