@@ -27,6 +27,11 @@ static asmlinkage long (*original_openat)(const struct pt_regs *);
 
 static asmlinkage long our_sys_execve(const struct pt_regs *regs) 
 {
+    if(!are_there_execve_rules)
+    {
+        goto call_original_execve;
+    }
+
     execve_event * event = create_execve_event(regs);
     if(!event)
     {
@@ -58,13 +63,26 @@ execve_prevention:
 
 static asmlinkage long our_sys_open(const struct pt_regs *regs) 
 {
+    if(!are_there_open_rules)
+    {
+        goto call_original_open;
+    }
+
     open_event * event = create_open_event(regs);
     if(unlikely(!event))
     {
         pr_info("create_open_event failed\n");
         goto call_original_open;
     }
-     kfree(event);
+
+    struct rule * rule = does_open_event_match_rule(event);
+    if(rule)
+    {
+        pr_info("matched open rule:  binary '%s' full_command %s target %s uid %d gid %d flags %d mode %d\n",
+            rule->data.open.binary_path, rule->data.open.full_command, rule->data.open.target_path, rule->data.open.uid, rule->data.open.gid, rule->data.open.flags, rule->data.open.mode);        
+    }
+
+    kfree(event);
 
 call_original_open:
     return original_open(regs);
@@ -72,12 +90,25 @@ call_original_open:
 
 static asmlinkage long our_sys_openat(const struct pt_regs *regs) 
 {
+    if(!are_there_open_rules)
+    {
+        goto call_original_openat;
+    }
+
     open_event * event = create_openat_event(regs);
     if(unlikely(!event))
     {
         pr_info("create_openat_event failed\n");
         goto call_original_openat;
     }
+
+    struct rule * rule = does_open_event_match_rule(event);
+    if(rule)
+    {
+        pr_info("matched open rule:  binary '%s' full_command %s target %s uid %d gid %d flags %d mode %d\n",
+            rule->data.open.binary_path, rule->data.open.full_command, rule->data.open.target_path, rule->data.open.uid, rule->data.open.gid, rule->data.open.flags, rule->data.open.mode);        
+    }
+
     kfree(event);
 
 call_original_openat:

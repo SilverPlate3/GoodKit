@@ -5,6 +5,9 @@
 #include <linux/slab.h>
 #include <linux/rwlock.h> 
 
+int are_there_execve_rules = 0;
+int are_there_open_rules = 0;
+
 LIST_HEAD(rules_list_head);
 static DEFINE_RWLOCK(rules_list_rw_lock);
 
@@ -259,10 +262,12 @@ int add_rule(struct rule *rule)
     if (rule->type == execve_rule_type)
     {
         build_execve_rule(rule, new_node);
+        are_there_execve_rules = 1;
     }
     else if(rule->type == open_rule_type)
     {
         build_open_rule(rule, new_node);
+        are_there_open_rules = 1;
     }
     else
     {
