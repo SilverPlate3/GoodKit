@@ -103,7 +103,7 @@ open_event * create_open_event(const struct pt_regs *regs)
     return event;
 }
 
-static struct file * get_file_from_fd(int fd)
+static struct file * get_file_object_from_fd(int fd)
 {
     if(fd == AT_FDCWD)
     {
@@ -126,7 +126,7 @@ static struct file * get_file_from_fd(int fd)
 static void get_dir_path_from_fd(int fd, char * output)
 {
     spin_lock(&current->files->file_lock);
-    struct file * file = get_file_from_fd(fd);
+    struct file * file = get_file_object_from_fd(fd);
     if(!file)
     {
         spin_unlock(&current->files->file_lock);
