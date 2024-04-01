@@ -1,6 +1,7 @@
 #include "ExecveEvent.h"
 #include "../StringUtils.h"
 #include "EventCommon.h"
+#include "Exclusions.h"
 
 #include <linux/cred.h> /* For current_uid() */ 
 #include <linux/uidgid.h> /* For __kuid_val() */ 
@@ -37,6 +38,14 @@ static struct full_command_data * get_full_command_data(const char __user *const
 
 execve_event * create_execve_event(const struct pt_regs *regs)
 {
+    const char __user *__filename = (const char __user *)regs->di;
+    char * binary_path = get_path_from_user_space(__filename);
+    if(binary_path && is_binary_excluded(binary_path))
+    {
+        kfree(binary_path);
+        return NULL;
+    }
+
     execve_event *event = kmalloc(sizeof(execve_event), GFP_KERNEL);
     if (unlikely(!event))
     {
@@ -49,8 +58,6 @@ execve_event * create_execve_event(const struct pt_regs *regs)
     event->uid = __kuid_val(current_uid());
     event->gid = __kgid_val(current_gid());
     
-    const char __user *__filename = (const char __user *)regs->di;
-    char * binary_path = get_path_from_user_space(__filename);
     if(binary_path)
     {
         strncpy(event->binary_path, binary_path, strlen(binary_path));

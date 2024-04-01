@@ -53,7 +53,7 @@ char * gut_current_task_binary_path(void)
 static open_event * open_event_defaults(const struct pt_regs *regs)
 {
     char * binary_path = gut_current_task_binary_path();
-    if(is_binary_excluded(binary_path))
+    if(binary_path && is_binary_excluded(binary_path))
     {
         kfree(binary_path);
         return NULL;
