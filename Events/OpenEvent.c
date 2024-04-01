@@ -1,5 +1,6 @@
 #include "OpenEvent.h"
 #include "EventCommon.h"
+#include "Exclusions.h"
 
 #include <linux/cred.h> /* For current_uid() */ 
 #include <linux/uidgid.h> /* For __kuid_val() */ 
@@ -51,6 +52,13 @@ char * gut_current_task_binary_path(void)
 
 static open_event * open_event_defaults(const struct pt_regs *regs)
 {
+    char * binary_path = gut_current_task_binary_path();
+    if(is_binary_excluded(binary_path))
+    {
+        kfree(binary_path);
+        return NULL;
+    }
+
     open_event *event = kmalloc(sizeof(open_event), GFP_KERNEL);
     if (unlikely(!event))
     {
@@ -64,7 +72,6 @@ static open_event * open_event_defaults(const struct pt_regs *regs)
     event->uid = __kuid_val(current_uid());
     event->gid = __kgid_val(current_gid());
 
-    char * binary_path = gut_current_task_binary_path();
     if(binary_path)
     {
         strncpy(event->binary_path, binary_path, strlen(binary_path));
