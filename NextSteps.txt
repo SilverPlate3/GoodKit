@@ -10,3 +10,5 @@ Possible
 1. slab 
 2. Different lists for open and excve rules
 3. Cache
+4. cd /tmp; nano /tmp/newFile.txt; will cause target_path to be 'newFile.txt'. Only scenario that it happend (tried many different).
+   - if target_path doesn't start with '/' , translate AT_FDCWD and insert it in the begining of the path. 
