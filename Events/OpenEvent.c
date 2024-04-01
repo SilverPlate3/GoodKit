@@ -162,6 +162,9 @@ open_event * create_openat_event(const struct pt_regs *regs)
         return NULL;
     }
 
+    event->flags = regs->dx;
+    event->mode = regs->r10;
+
     int fd = regs->di;
     get_dir_path_from_fd(fd, event->target_path);
     const char __user *__filename = (const char __user *)regs->si;
