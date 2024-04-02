@@ -75,7 +75,7 @@ static void print_matched_execve_rule(const execve_event *event, const struct ex
 
 static void print_matched_open_rule(const open_event *event, const struct open_rule *open_rule)
 {
-    pr_info("execve event match rule.\nRule.binary_path: '%s' Event.binary_path: '%s'\nRule.full_command: '%s' Event.full_command: '%s'\nRule.target_path: '%s' Event.target_path: '%s'\nRule.uid: %d Event.uid: %d\nRule.gid: %d Event.gid: %d\nRule.flags: %d Event.flags: %d\nRule.mode: %d Event.mode: %d\n",
+    pr_info("open event match rule.\nRule.binary_path: '%s' Event.binary_path: '%s'\nRule.full_command: '%s' Event.full_command: '%s'\nRule.target_path: '%s' Event.target_path: '%s'\nRule.uid: %d Event.uid: %d\nRule.gid: %d Event.gid: %d\nRule.flags: %d Event.flags: %d\nRule.mode: %d Event.mode: %d\n",
             open_rule->binary_path, event->binary_path, open_rule->full_command, event->full_command, open_rule->target_path, event->target_path, open_rule->uid, event->uid, open_rule->gid, event->gid, open_rule->flags, event->flags, open_rule->mode, event->mode);
 }
 
@@ -296,7 +296,9 @@ void delete_rules(void)
     unsigned long flags; 
     write_lock_irqsave(&rules_list_rw_lock, flags); 
     delete_rules_raw();
-    write_unlock_irqrestore(&rules_list_rw_lock, flags); 
+    write_unlock_irqrestore(&rules_list_rw_lock, flags);
+    are_there_execve_rules = 0;
+    are_there_open_rules = 0;
 }
 
 struct rule * does_open_event_match_rule(const open_event *event)
