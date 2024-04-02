@@ -40,7 +40,7 @@ int add_binary_to_excluded_list(char * binary_path)
     return 0;
 }
 
-int is_binary_excluded(char * binary_path)
+static int is_binary_excluded_raw(char * binary_path)
 {
     struct excluded_binary_list *temp;
     list_for_each_entry(temp, &excluded_binary_list_head, list)
@@ -51,4 +51,33 @@ int is_binary_excluded(char * binary_path)
         }
     }
     return 0;
+}
+
+static void delete_exclusions_raw(void)
+{
+    struct excluded_binary_list *temp, *next;
+    list_for_each_entry_safe(temp, next, &excluded_binary_list_head, list)
+    {
+        list_del(&temp->list);
+        kfree(temp->binary_path);
+        kfree(temp);
+    }
+}
+
+int is_binary_excluded(char * binary_path)
+{
+    int rv;
+    unsigned long flags;
+    read_lock_irqsave(&excluded_binary_list_rw_lock, flags);
+    rv = is_binary_excluded_raw(binary_path);
+    read_unlock_irqrestore(&excluded_binary_list_rw_lock, flags);
+    return rv;
+}
+
+void delete_exclusions(void)
+{
+    unsigned long flags; 
+    write_lock_irqsave(&excluded_binary_list_rw_lock, flags); 
+    delete_exclusions_raw();
+    write_unlock_irqrestore(&excluded_binary_list_rw_lock, flags); 
 }

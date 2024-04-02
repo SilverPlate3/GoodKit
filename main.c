@@ -6,6 +6,7 @@
 #include "ThreadManagment/ThreadManagment.h"
 #include "Events/EventCommon.h"
 #include "Events/OpenEvent.h"
+#include "Exclusions/Exclusions.h"
 
 #include <linux/module.h> 
 #include <linux/limits.h>
@@ -204,6 +205,9 @@ static void __exit good_kit_exit(void)
 
     delete_rules();
     pr_info("Deleted rules\n");
+
+    delete_exclusions();
+    pr_info("Deleted exclusions\n");
 
     deregister_rules_device();
     pr_info("Deregistered rules device\n");
