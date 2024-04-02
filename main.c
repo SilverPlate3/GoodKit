@@ -7,6 +7,7 @@
 #include "Events/EventCommon.h"
 #include "Events/OpenEvent.h"
 #include "Exclusions/Exclusions.h"
+#include "Exclusions/ExclusionsIoctl.h"
 
 #include <linux/module.h> 
 #include <linux/limits.h>
@@ -159,6 +160,11 @@ static int __init good_kit_init(void)
         return -1; 
     }
 
+    if(register_exclusions_device())
+    {
+        return -1;
+    }
+
     if (register_rules_device()) 
     {
         return -1; 
@@ -208,6 +214,9 @@ static void __exit good_kit_exit(void)
 
     delete_exclusions();
     pr_info("Deleted exclusions\n");
+
+    deregister_exclusions_device();
+    pr_info("Deregistered exclusions device\n");
 
     deregister_rules_device();
     pr_info("Deregistered rules device\n");
