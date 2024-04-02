@@ -53,6 +53,16 @@ static int is_binary_excluded_raw(char * binary_path)
     return 0;
 }
 
+static void print_all_exclusions_raw(void)
+{
+    pr_info("\n-------- printing exclusions: --------\n");
+    struct excluded_binary_list *temp;
+    list_for_each_entry(temp, &excluded_binary_list_head, list)
+    {
+        pr_info("binary_path: %s\n", temp->binary_path);
+    }
+}
+
 static void delete_exclusions_raw(void)
 {
     struct excluded_binary_list *temp, *next;
@@ -80,4 +90,12 @@ void delete_exclusions(void)
     write_lock_irqsave(&excluded_binary_list_rw_lock, flags); 
     delete_exclusions_raw();
     write_unlock_irqrestore(&excluded_binary_list_rw_lock, flags); 
+}
+
+void print_all_exclusions(void)
+{
+    unsigned long flags; 
+    read_lock_irqsave(&excluded_binary_list_rw_lock, flags);
+    print_all_exclusions_raw();
+    read_unlock_irqrestore(&excluded_binary_list_rw_lock, flags); 
 }
