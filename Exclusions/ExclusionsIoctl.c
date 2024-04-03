@@ -66,7 +66,7 @@ long good_kit_exclusions_ioctl_main_callback(struct file *file, unsigned int ioc
     }
 
 good_kit_exclusions_ioctl_main_callback_exit:
-    atomic_set(&good_kit_exclusions_file_open, USED); 
+    atomic_set(&good_kit_exclusions_file_open, NOT_USED); 
     return rv;
 }
 
