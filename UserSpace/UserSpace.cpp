@@ -155,6 +155,21 @@ int main()
         std::cout << "ADD_BINARY_EXCLUSION failed. errno: " << errno << std::endl;
     }
 
+    if(ioctl(fd2, ADD_BINARY_EXCLUSION, "/usr/bin/sudo") < 0)
+    {
+        std::cout << "ADD_BINARY_EXCLUSION failed. errno: " << errno << std::endl;
+    }
+
+    if(ioctl(fd2, ADD_BINARY_EXCLUSION, "*systemd-oomd") < 0)
+    {
+        std::cout << "ADD_BINARY_EXCLUSION failed. errno: " << errno << std::endl;
+    }
+
+    if(ioctl(fd2, ADD_BINARY_EXCLUSION, "*node") < 0)
+    {
+        std::cout << "ADD_BINARY_EXCLUSION failed. errno: " << errno << std::endl;
+    }
+
     if(ioctl(fd2, PRINT_ALL_EXCLUSIONS, NULL) < 0)
     {
         std::cout << "PRINT_ALL_EXCLUSIONS failed. errno: " << errno << std::endl;

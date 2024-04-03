@@ -65,6 +65,7 @@ static void print_all_exclusions_raw(void)
 
 static void delete_exclusions_raw(void)
 {
+    pr_info("\n-------- deleting exclusions: --------\n");
     struct excluded_binary_list *temp, *next;
     list_for_each_entry_safe(temp, next, &excluded_binary_list_head, list)
     {

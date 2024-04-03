@@ -37,7 +37,6 @@ static asmlinkage long our_sys_execve(const struct pt_regs *regs)
     execve_event * event = create_execve_event(regs);
     if(!event)
     {
-        pr_info("create_execve_event failed\n");
         goto call_original_execve;
     }
 
@@ -73,7 +72,6 @@ static asmlinkage long our_sys_open(const struct pt_regs *regs)
     open_event * event = create_open_event(regs);
     if(unlikely(!event))
     {
-        pr_info("create_open_event failed\n");
         goto call_original_open;
     }
 
@@ -100,7 +98,6 @@ static asmlinkage long our_sys_openat(const struct pt_regs *regs)
     open_event * event = create_openat_event(regs);
     if(unlikely(!event))
     {
-        pr_info("create_openat_event failed\n");
         goto call_original_openat;
     }
 
