@@ -13,13 +13,20 @@
 
 char * gut_current_task_binary_path(void)
 {
-    char exe_path [PATH_MAX]; // TODO: Dynamic allocation
+    char *returned_binary_path = NULL;
+    char * exe_path = kmalloc(PATH_MAX, GFP_KERNEL);
+    if(unlikely(!exe_path))
+    {
+        pr_info("gut_current_task_binary_path - Failed to allocate memory for exe_path\n");
+        return NULL;
+    }
+    memset(exe_path, 0, PATH_MAX);
 
     struct mm_struct * mm = get_task_mm(current);
     if(!mm)
     {
         pr_info("gut_current_task_binary_path - Failed to get mm_struct\n");
-        return NULL;
+        goto gut_current_task_binary_path_exit;
     }
 
     mmap_read_lock(mm);
@@ -35,19 +42,21 @@ char * gut_current_task_binary_path(void)
     if(IS_ERR(binary_path))
     {
         pr_info("gut_current_task_binary_path - Failed to get binary path\n");
-        return NULL;
+        goto gut_current_task_binary_path_exit;
     }
 
-    char *returned_binary_path = kmalloc(strlen(binary_path) + 1, GFP_KERNEL);
+    returned_binary_path = kmalloc(strlen(binary_path) + 1, GFP_KERNEL);
     if(unlikely(!returned_binary_path))
     {
         pr_info("gut_current_task_binary_path - Failed to allocate memory for returned_binary_path\n");
-        return NULL;
+        goto gut_current_task_binary_path_exit;
     }
     memset(returned_binary_path, 0, strlen(binary_path) + 1);
     strncpy(returned_binary_path, binary_path, strlen(binary_path));
     returned_binary_path[strlen(binary_path)] = '\0';
 
+gut_current_task_binary_path_exit:
+    kfree(exe_path);
     return returned_binary_path;
 }
 
