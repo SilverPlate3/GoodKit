@@ -5,6 +5,7 @@
 #include <linux/miscdevice.h>
 #include <linux/types.h>
 #include <linux/slab.h>
+#include <linux/fs.h>
 
 enum { 
     NOT_USED = 0, 
@@ -13,7 +14,7 @@ enum {
 
 static atomic_t good_kit_exclusions_file_open = ATOMIC_INIT(NOT_USED); 
 
-long good_kit_exclusions_ioctl_main_callback(struct file *file, unsigned int ioctl_num, unsigned long parameter)
+static long good_kit_exclusions_ioctl_main_callback(struct file *file, unsigned int ioctl_num, unsigned long parameter)
 {
     pr_info("good_kit_exclusions_ioctl_main_callback\n");
     if (atomic_cmpxchg(&good_kit_exclusions_file_open, NOT_USED, USED)) 
