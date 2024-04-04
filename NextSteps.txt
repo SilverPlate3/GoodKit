@@ -1,7 +1,4 @@
 Must:
-1. is_open_event_matches_rule
-2. delete rules ioctl
-3. Delete exclusions ioctl
 4. UserSpace
 5. Python script that tests the shit out of UserSpace and Kmod.
 
