@@ -70,7 +70,7 @@ static asmlinkage long our_sys_open(const struct pt_regs *regs)
     }
 
     open_event * event = create_open_event(regs);
-    if(unlikely(!event))
+    if(!event)
     {
         goto call_original_open;
     }
@@ -105,7 +105,7 @@ static asmlinkage long our_sys_openat(const struct pt_regs *regs)
     }
 
     open_event * event = create_openat_event(regs);
-    if(unlikely(!event))
+    if(!event)
     {
         goto call_original_openat;
     }
@@ -190,7 +190,10 @@ static int __init good_kit_init(void)
         return -1;
     }
 
-    init_global_alert_threads_tracker();
+    if(!init_global_alert_threads_tracker())
+    {
+        return -1;
+    }
     
     disable_write_protection(); 
     original_execve = (void *)sys_call_table_stolen[__NR_execve];

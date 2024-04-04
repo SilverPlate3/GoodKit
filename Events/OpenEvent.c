@@ -92,7 +92,7 @@ static open_event * open_event_defaults(const struct pt_regs *regs)
 open_event * create_open_event(const struct pt_regs *regs)
 {
     open_event *event = open_event_defaults(regs);
-    if(unlikely(!event))
+    if(!event)
     {
         return NULL;
     }
@@ -167,7 +167,15 @@ static void append_cwd_to_path(char * path)
     spin_lock(&current->fs->lock);
     struct path pwd = current->fs->pwd;
     path_get(&pwd);
+    
     char *buf = (char *)kmalloc(GFP_KERNEL, PATH_MAX);
+    if(unlikely(!buf))
+    {
+        path_put(&pwd);
+        spin_unlock(&current->fs->lock);
+        return;
+    }
+    
     char *cwd = d_path(&pwd, buf, PATH_MAX);
     path_put(&pwd);
     spin_unlock(&current->fs->lock);
@@ -179,7 +187,7 @@ static void append_cwd_to_path(char * path)
 open_event * create_openat_event(const struct pt_regs *regs)
 {
     open_event *event = open_event_defaults(regs);
-    if(unlikely(!event))
+    if(!event)
     {
         return NULL;
     }

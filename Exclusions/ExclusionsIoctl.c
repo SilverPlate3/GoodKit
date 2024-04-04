@@ -31,7 +31,7 @@ long good_kit_exclusions_ioctl_main_callback(struct file *file, unsigned int ioc
         __user char * binary_path_user = (__user char *)parameter;
         int binary_path_user_len = strnlen_user(binary_path_user, PATH_MAX);
         char * binary_path = kmalloc(binary_path_user_len + 1, GFP_KERNEL);
-        if (!binary_path)
+        if (unlikely(!binary_path))
         {
             pr_alert("good_kit_exclusions_ioctl_main_callback ADD_BINARY_EXCLUSION - kmalloc failed\n");
             rv = -ENOMEM;

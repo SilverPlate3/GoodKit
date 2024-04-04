@@ -11,4 +11,4 @@ extern struct alert_threads_tracker *alert_threads_tracker;
 
 void ensure_no_alert_threads_are_running(void);
 
-void init_global_alert_threads_tracker(void);
+int init_global_alert_threads_tracker(void);

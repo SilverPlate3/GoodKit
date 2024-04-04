@@ -28,7 +28,7 @@ long good_kit_rules_ioctl_main_callback(struct file *file, unsigned int ioctl_nu
         {
             pr_info("good_kit_rules_ioctl_main_callback - ADD_RULE\n");
             struct rule *rule = kmalloc(sizeof(struct rule), GFP_KERNEL);
-            if (!rule) 
+            if (unlikely(!rule)) 
             {
                 pr_alert("good_kit_rules_ioctl_main_callback - failed to allocate memory for rule");
                 rv = -ENOMEM;
