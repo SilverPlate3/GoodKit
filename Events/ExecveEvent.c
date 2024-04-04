@@ -22,7 +22,7 @@ static struct full_command_data * get_full_command_data(const char __user *const
         return NULL;
     }
 
-    full_command_data->full_command = kmalloc(MAX_ARG_LENGTH, GFP_KERNEL);
+    full_command_data->full_command = kmalloc(PATH_MAX, GFP_KERNEL);
     if (unlikely(!full_command_data->full_command))
     {
         pr_info("Failed to allocate memory for full_command_data->full_command\n");
@@ -31,8 +31,8 @@ static struct full_command_data * get_full_command_data(const char __user *const
     }
 
     MKVAR(const char __user *const __user *, argv, __argv);
-    full_command_data->argc = join_strings_from_user(argv, " ", full_command_data->full_command, MAX_ARG_LENGTH);
-    full_command_data->full_command[MAX_ARG_LENGTH - 1] = '\0';
+    full_command_data->argc = join_strings_from_user(argv, " ", full_command_data->full_command, PATH_MAX);
+    full_command_data->full_command[PATH_MAX - 1] = '\0';
     return full_command_data;
 }
 
