@@ -85,8 +85,16 @@ static asmlinkage long our_sys_open(const struct pt_regs *regs)
     open_alert(rule, event);
     kfree(event);
 
+    if(rule->data.open.prevention == 1)
+    {
+        goto open_prevention;
+    }
+
 call_original_open:
     return original_open(regs);
+
+open_prevention:
+        return -EPERM;
 }
 
 static asmlinkage long our_sys_openat(const struct pt_regs *regs) 
@@ -112,8 +120,16 @@ static asmlinkage long our_sys_openat(const struct pt_regs *regs)
     open_alert(rule, event);
     kfree(event);
 
+    if(rule->data.open.prevention == 1)
+    {
+        goto openat_prevention;
+    }
+
 call_original_openat:
     return original_openat(regs);
+
+openat_prevention:
+        return -EPERM;
 }
 
 static unsigned long **acquire_sys_call_table(void) 
