@@ -13,4 +13,6 @@ struct alert
 
 #ifdef __KERNEL__
 void execve_alert(struct rule *rule, execve_event * execve);
+
+void open_alert(struct rule *rule, open_event * open)
 #endif
