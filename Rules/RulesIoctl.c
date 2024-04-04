@@ -53,6 +53,12 @@ long good_kit_rules_ioctl_main_callback(struct file *file, unsigned int ioctl_nu
             print_rules();
             break;
         }
+        case DELETE_RULES:
+        {
+            pr_info("good_kit_rules_ioctl_main_callback - DELETE_RULES\n");
+            delete_rules();
+            break;
+        }
         default:
         {
             pr_alert("good_kit_rules_ioctl_main_callback - ioctl_num not found\n");

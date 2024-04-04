@@ -57,6 +57,12 @@ long good_kit_exclusions_ioctl_main_callback(struct file *file, unsigned int ioc
         print_all_exclusions();
         break;
     }
+    case DELETE_EXCLUSIONS:
+    {
+        pr_info("good_kit_exclusions_file_open - DELETE_EXCLUSIONS\n");
+        delete_exclusions();
+        break;
+    }
     default:
     {
         pr_alert("good_kit_exclusions_ioctl_main_callback_exit - ioctl_num not found\n");

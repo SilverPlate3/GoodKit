@@ -69,6 +69,7 @@ static void delete_exclusions_raw(void)
     struct excluded_binary_list *temp, *next;
     list_for_each_entry_safe(temp, next, &excluded_binary_list_head, list)
     {
+        pr_info("deleting exclusion: %s\n", temp->binary_path);
         list_del(&temp->list);
         kfree(temp->binary_path);
         kfree(temp);

@@ -6,11 +6,11 @@
 
 #define ADD_RULE _IOW('a','a',struct rule*)
 #define PRINT_ALL_RULLES _IO('a','b')
-//#define DELETE_RULES _IO('a','c') // TODO: Implement this
+#define DELETE_RULES _IO('a','c') // TODO: Implement this
 
 #define ADD_BINARY_EXCLUSION _IOW('a','d',char *)
 #define PRINT_ALL_EXCLUSIONS _IO('a','e')
-//#define DELETE_EXCLUSIONS _IO('a','f') // TODO: Implement this
+#define DELETE_EXCLUSIONS _IO('a','f') // TODO: Implement this
 
 #define RULES_DEVICE_NAME "good_kit_rules"
 #define RULES_DEVICE_PATH "/dev/" RULES_DEVICE_NAME
