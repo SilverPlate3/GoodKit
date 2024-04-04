@@ -9,6 +9,7 @@
 #include <linux/string_helpers.h>
 #include <linux/fdtable.h>
 #include <linux/file.h>
+#include <linux/fs_struct.h>
 
 char * gut_current_task_binary_path(void)
 {
@@ -161,6 +162,20 @@ static void get_dir_path_from_fd(int fd, char * output)
     kfree(tmp);
 }
 
+static void append_cwd_to_path(char * path)
+{
+    spin_lock(&current->fs->lock);
+    struct path pwd = current->fs->pwd;
+    path_get(&pwd);
+    char *buf = (char *)kmalloc(GFP_KERNEL, PATH_MAX);
+    char *cwd = d_path(&pwd, buf, PATH_MAX);
+    path_put(&pwd);
+    spin_unlock(&current->fs->lock);
+    strcat(path, cwd);
+    strcat(path, "/");
+    kfree(buf);
+}
+
 open_event * create_openat_event(const struct pt_regs *regs)
 {
     open_event *event = open_event_defaults(regs);
@@ -174,10 +189,15 @@ open_event * create_openat_event(const struct pt_regs *regs)
 
     int fd = regs->di;
     get_dir_path_from_fd(fd, event->target_path);
+
     const char __user *__filename = (const char __user *)regs->si;
     const char * filename = get_path_from_user_space(__filename);
     if(filename)
     {
+        if(fd == AT_FDCWD && filename[0] != '/')
+        {
+            append_cwd_to_path(event->target_path);
+        }
         strcat(event->target_path, filename);
     }
     return event;
