@@ -18,15 +18,6 @@ void print_alerts();
 
 int main()
 {
-    // int fd2 = open("/tmp", O_RDONLY | O_DIRECTORY);
-    // fd2 = openat(fd2, "1", O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-    // std::cout << "openat fd2: " << fd2 << std::endl;
-
-    // int fd3 = open("/home/ariel/Desktop/KernelDev/GoodKit", O_RDONLY | O_DIRECTORY);
-    // fd3 = openat(fd3, "StringUtils.c", O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-    // std::cout << "openat fd3: " << fd3 << std::endl;
-    // return 0;
-
     int fd = open(RULES_DEVICE_PATH, O_WRONLY);
     if(fd < 0)
     {
