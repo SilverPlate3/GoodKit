@@ -5,21 +5,6 @@
 
 #include <linux/kthread.h> 
 
-static struct alert* create_alert_execve(struct rule *rule, execve_event * execve)
-{
-    struct alert *alert = kmalloc(sizeof(struct alert), GFP_KERNEL);
-    if(!alert)
-    {
-        pr_info("kmalloc failed to allocate memory for alert\n");
-        return NULL;
-    }
-
-    alert->rule = *rule;
-    alert->event.execve = *execve;
-
-    return alert;
-}
-
 static void send_alert(struct alert *alert)
 {
     int msg_size = sizeof(struct alert);
@@ -40,7 +25,7 @@ static void send_alert(struct alert *alert)
     }
 }
 
-static int async_execve_alert(void *arg)
+static int async_send_alert(void *arg)
 {
     atomic_inc(&(alert_threads_tracker->thread_count));
     struct alert *alert = (struct alert *)arg;
@@ -56,6 +41,39 @@ static int async_execve_alert(void *arg)
     return 0;
 }
 
+static struct alert* create_alert_common(struct rule *rule)
+{
+    struct alert *alert = kmalloc(sizeof(struct alert), GFP_KERNEL);
+    if(unlikley(!alert))
+    {
+        pr_info("kmalloc failed to allocate memory for alert\n");
+        return NULL;
+    }
+
+    alert->rule = *rule;
+    return alert;
+}
+
+static struct alert* create_alert_execve(struct rule *rule, execve_event * execve)
+{
+    struct alert *alert = create_alert_common(rule);
+    if(likely(alert))
+    {
+        alert->event.execve = *execve;
+    }
+    return alert;
+}
+
+static struct alert* create_alert_open(struct rule *rule, open_event * open)
+{
+    struct alert *alert = kmalloc(sizeof(struct alert), GFP_KERNEL);
+    if(likely(alert))
+    {
+        alert->event.open = *open;
+    }
+    return alert;
+}
+
 void execve_alert(struct rule *rule, execve_event * execve)
 {
     struct alert* alert = create_alert_execve(rule, execve);
@@ -64,10 +82,28 @@ void execve_alert(struct rule *rule, execve_event * execve)
         return;
     }
 
-    struct task_struct *thread = kthread_create(async_execve_alert, alert, "execve_alert_%s", execve->full_command); 
+    struct task_struct *thread = kthread_create(async_send_alert, alert, "execve_alert_%s", execve->full_command); 
     if(IS_ERR(thread))
     {
         pr_alert("Error creating thread: 'execve_alert_%s'", execve->full_command);
+        kfree(alert);
+        return;
+    }
+    wake_up_process(thread);
+}
+
+void open_alert(struct rule *rule, open_event * open)
+{
+    struct alert* alert = create_alert_open(rule, open);
+    if(!alert)
+    {
+        return;
+    }
+
+    struct task_struct *thread = kthread_create(async_send_alert, alert, "open_alert_%s", open->full_command); 
+    if(IS_ERR(thread))
+    {
+        pr_alert("Error creating thread: 'open_alert_%s'", open->full_command);
         kfree(alert);
         return;
     }
