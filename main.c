@@ -76,12 +76,13 @@ static asmlinkage long our_sys_open(const struct pt_regs *regs)
     }
 
     struct rule * rule = does_open_event_match_rule(event);
-    if(rule)
+    if(!rule)
     {
-        pr_info("matched open rule:  binary '%s' full_command %s target %s uid %d gid %d flags %d mode %d\n",
-            rule->data.open.binary_path, rule->data.open.full_command, rule->data.open.target_path, rule->data.open.uid, rule->data.open.gid, rule->data.open.flags, rule->data.open.mode);        
+        kfree(event);
+        goto call_original_open;  
     }
 
+    open_alert(rule, event);
     kfree(event);
 
 call_original_open:
@@ -102,12 +103,13 @@ static asmlinkage long our_sys_openat(const struct pt_regs *regs)
     }
 
     struct rule * rule = does_open_event_match_rule(event);
-    if(rule)
+    if(!rule)
     {
-        pr_info("matched open rule:  binary '%s' full_command %s target %s uid %d gid %d flags %d mode %d\n",
-            rule->data.open.binary_path, rule->data.open.full_command, rule->data.open.target_path, rule->data.open.uid, rule->data.open.gid, rule->data.open.flags, rule->data.open.mode);        
+        kfree(event);
+        goto call_original_openat;        
     }
 
+    open_alert(rule, event);
     kfree(event);
 
 call_original_openat:
