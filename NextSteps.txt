@@ -6,6 +6,7 @@ Must:
 5. Delete exclusions ioctl
 6. UserSpace
 7. Python script that tests the shit out of UserSpace and Kmod.
+8. Remove unlikley() after exclusions added + Add likely in other places
 
 
 Possible
