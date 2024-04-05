@@ -11,6 +11,7 @@
 #define DEFAULT_ARGC -1
 #define DEFAULT_FLAGS -1
 #define DEFAULT_MODE -1
+#define DEFAULT_PREVENTION 0
 
 extern int are_there_execve_rules;
 extern int are_there_open_rules;
