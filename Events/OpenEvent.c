@@ -38,7 +38,7 @@ char * gut_current_task_binary_path(void)
     mmap_read_unlock(mm);
     mmput(mm);
 
-    char * binary_path = d_path( &(exe_file->f_path), exe_path, sizeof(exe_path) * sizeof(char) );
+    char * binary_path = d_path( &(exe_file->f_path), exe_path, PATH_MAX);
     if(IS_ERR(binary_path))
     {
         pr_info("gut_current_task_binary_path - Failed to get binary path\n");
