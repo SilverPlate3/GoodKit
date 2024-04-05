@@ -1,0 +1,37 @@
+{
+    "execve_rules": [
+      {
+        "full_command": "*usermod -aG root*",
+        "uid": 1000,
+        "gid": 1000
+      },
+      {
+        "binary_path": "*/wget",
+        "full_command": "*Malicious.com",
+        "argc": 3,
+        "prevention": 1
+      }
+    ],
+    "open_rules": [
+      {
+        "binary_path": "/usr/bin/nano",
+        "full_command": "*nano*",
+        "target_path": "/tmp/newMaliciousFile.txt",
+        "uid": 1000,
+        "gid": 1000,
+        "flags": 64,
+        "mode": 128
+      },
+      {
+        "target_path": "/etc/passwd",
+        "flags": 0,
+        "prevention": 1
+      }
+    ],
+    "excluded_binary_paths": [
+      "*journald*",
+      "/usr/bin/sudo",
+      "*systemd-oomd",
+      "*node"
+    ]
+  }
