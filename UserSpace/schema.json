@@ -1,0 +1,46 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "execve_rules": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "binary_path": {"type": "string"},
+            "full_command": {"type": "string"},
+            "uid": {"type": "integer"},
+            "gid": {"type": "integer"},
+            "argc": {"type": "integer"},
+            "prevention": {"type": "integer"}
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      "open_rules": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "binary_path": {"type": "string"},
+            "full_command": {"type": "string"},
+            "target_path": {"type": "string"},
+            "uid": {"type": "integer"},
+            "gid": {"type": "integer"},
+            "flags": {"type": "integer"},
+            "mode": {"type": "integer"},
+            "prevention": {"type": "integer"}
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      "excluded_binary_paths": {
+        "type": "array",
+        "binary_path": {"type": "string"}
+      }
+    },
+    "required": ["execve_rules", "open_rules", "excluded_binary_paths"],
+    "additionalProperties": false
+  }
