@@ -11,13 +11,13 @@
 #include <linux/file.h>
 #include <linux/fs_struct.h>
 
-char * gut_current_task_binary_path(void)
+char * get_current_task_binary_path(void)
 {
     char *returned_binary_path = NULL;
     char * exe_path = kmalloc(PATH_MAX, GFP_KERNEL);
     if(unlikely(!exe_path))
     {
-        pr_info("gut_current_task_binary_path - Failed to allocate memory for exe_path\n");
+        pr_info("get_current_task_binary_path - Failed to allocate memory for exe_path\n");
         return NULL;
     }
     memset(exe_path, 0, PATH_MAX);
@@ -25,8 +25,8 @@ char * gut_current_task_binary_path(void)
     struct mm_struct * mm = get_task_mm(current);
     if(!mm)
     {
-        pr_info("gut_current_task_binary_path - Failed to get mm_struct\n");
-        goto gut_current_task_binary_path_exit;
+        pr_info("get_current_task_binary_path - Failed to get mm_struct\n");
+        goto get_current_task_binary_path_exit;
     }
 
     mmap_read_lock(mm);
@@ -41,28 +41,28 @@ char * gut_current_task_binary_path(void)
     char * binary_path = d_path( &(exe_file->f_path), exe_path, PATH_MAX);
     if(IS_ERR(binary_path))
     {
-        pr_info("gut_current_task_binary_path - Failed to get binary path\n");
-        goto gut_current_task_binary_path_exit;
+        pr_info("get_current_task_binary_path - Failed to get binary path\n");
+        goto get_current_task_binary_path_exit;
     }
 
     returned_binary_path = kmalloc(strlen(binary_path) + 1, GFP_KERNEL);
     if(unlikely(!returned_binary_path))
     {
-        pr_info("gut_current_task_binary_path - Failed to allocate memory for returned_binary_path\n");
-        goto gut_current_task_binary_path_exit;
+        pr_info("get_current_task_binary_path - Failed to allocate memory for returned_binary_path\n");
+        goto get_current_task_binary_path_exit;
     }
     memset(returned_binary_path, 0, strlen(binary_path) + 1);
     strncpy(returned_binary_path, binary_path, strlen(binary_path));
     returned_binary_path[strlen(binary_path)] = '\0';
 
-gut_current_task_binary_path_exit:
+get_current_task_binary_path_exit:
     kfree(exe_path);
     return returned_binary_path;
 }
 
 static open_event * open_event_defaults(const struct pt_regs *regs)
 {
-    char * binary_path = gut_current_task_binary_path();
+    char * binary_path = get_current_task_binary_path();
     if(binary_path && is_binary_excluded(binary_path))
     {
         kfree(binary_path);
