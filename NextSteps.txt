@@ -1,10 +1,12 @@
 Must:
 1. UserSpace
-2. Python script that tests the shit out of UserSpace and Kmod.
+2. Python script that tests the sh*t out of UserSpace and Kmod.
 3. in UserSpace app use throw instead of return codes. 
 4. 2 Makefile's Maybe Cmake as well
+5. slab execve_event & open_event
+6. After implementing slab, check again for mem leaks. 
+7. reorganize the directory structure of the project.
 
 Possible
-1. slab execve_event & open_event
-2. Different lists for open and excve rules
-3. map<event, outcome> cache
+1. Different lists for open and excve rules
+2. map<event, outcome> cache
