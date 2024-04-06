@@ -1,11 +1,9 @@
 Must:
-4. UserSpace
-5. Python script that tests the shit out of UserSpace and Kmod.
-
+1. UserSpace
+2. Python script that tests the shit out of UserSpace and Kmod.
+3. in UserSpace app use throw instead of return codes. 
 
 Possible
-1. slab 
+1. slab execve_event & open_event
 2. Different lists for open and excve rules
 3. Cache
-4. cd /tmp; nano /tmp/newFile.txt; will cause target_path to be 'newFile.txt'. Only scenario that it happend (tried many different).
-   - if target_path doesn't start with '/' , translate AT_FDCWD and insert it in the begining of the path. 
