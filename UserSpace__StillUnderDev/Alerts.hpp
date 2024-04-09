@@ -10,20 +10,15 @@ class Alerts
 {
 public:
 
-    ~Alerts();
-
     void listen_to_alerts();
 
 private:
 
-    int subscribe_to_netlink();
+    int Alerts::bind_netlink_socket();
+
+    void print_alert(const struct alert& alert);
 
     std::string execve_alert_to_string(const struct alert& alert);
 
     std::string open_alert_to_string(const struct alert& alert);
-
-    void print_alert(const struct alert& alert);
-
-    struct nlmsghdr *nlh = NULL;
-    struct msghdr msg;
 };

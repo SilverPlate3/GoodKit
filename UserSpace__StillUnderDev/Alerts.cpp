@@ -5,45 +5,32 @@
 #include <iostream>
 #include <cstring>
 
-    Alerts::~Alerts()
+    void Alerts::listen_to_alerts()
     {
-        if(nlh != NULL)
-        {
-            free(nlh);
-        }
-    }
-
-    int Alerts::subscribe_to_netlink()
-    {
-        struct sockaddr_nl src_addr, dest_addr;
+        struct sockaddr_nl dest_addr;
         struct iovec iov;
+        struct msghdr msg;
 
-        int sock_fd = socket(PF_NETLINK, SOCK_RAW, NETLINK_GOOD_KIT);
-        if (sock_fd < 0)
+        int sock_fd = bind_netlink_socket();
+        if(sock_fd < 0)
         {
-            std::cout << "Failed to create socket. errno: " << errno << std::endl;
-            return -1;
+            return;
         }
-
-        memset(&src_addr, 0, sizeof(src_addr));
-        src_addr.nl_family = AF_NETLINK;
-        src_addr.nl_pid = NETLINK_PORT_ID;
-
-        bind(sock_fd, (struct sockaddr*)&src_addr, sizeof(src_addr));
 
         memset(&dest_addr, 0, sizeof(dest_addr));
         memset(&iov, 0, sizeof(iov));
         memset(&msg, 0, sizeof(msg));
 
-        nlh = (struct nlmsghdr *)malloc(NLMSG_SPACE(sizeof(struct alert)));
+        struct nlmsghdr *nlh = (struct nlmsghdr *)malloc(NLMSG_SPACE(sizeof(struct alert)));
         if(nlh == NULL)
         {
             std::cout << "Failed to allocate memory for nlh" << std::endl;
-            return -1;
+            return;
         }
         nlh->nlmsg_len = NLMSG_SPACE(sizeof(struct alert));
         nlh->nlmsg_pid = NETLINK_PORT_ID;
         nlh->nlmsg_flags = 0;
+
         iov.iov_base = (void *)nlh;
         iov.iov_len = nlh->nlmsg_len;
         msg.msg_name = (void *)&dest_addr;
@@ -51,7 +38,57 @@
         msg.msg_iov = &iov;
         msg.msg_iovlen = 1;
 
+        int err_counter = 0;
+        while (true)
+        {
+            int recv_bytes = recvmsg(sock_fd, &msg, 0);
+            if(recv_bytes < 0)
+            {
+                std::cout << "Failed to receive alert. errno: " << errno << std::endl;
+                ++err_counter;
+                if(err_counter < 5)
+                {
+                    continue;;
+                }
+
+                break;
+            }
+            else
+            {
+                struct alert *alert = (struct alert *)NLMSG_DATA(nlh);
+                print_alert(*alert);        
+            }
+
+            memset(nlh, 0, NLMSG_SPACE(sizeof(struct alert)));
+        }
+
+        free(nlh);
+        close(sock_fd);
+    }
+
+    int Alerts::bind_netlink_socket()
+    {
+        struct sockaddr_nl src_addr;
+        int sock_fd = socket(PF_NETLINK, SOCK_RAW, NETLINK_GOOD_KIT);
+        if (sock_fd < 0)
+        {
+            std::cout << "Failed to create socket. errno: " << errno << std::endl;
+            return sock_fd;
+        }
+
+        memset(&src_addr, 0, sizeof(src_addr));
+        src_addr.nl_family = AF_NETLINK;
+        src_addr.nl_pid = NETLINK_PORT_ID;
+
+        bind(sock_fd, (struct sockaddr*)&src_addr, sizeof(src_addr));
         return sock_fd;
+    }
+
+    void Alerts::print_alert(const struct alert& alert)
+    {
+        std::string to_print("--------- RECEIVED ALERT ---------\n");
+        to_print += alert.rule.type == execve_rule_type ? execve_alert_to_string(alert) : open_alert_to_string(alert);
+        std::cout << to_print << std::endl;
     }
 
     std::string Alerts::execve_alert_to_string(const struct alert& alert)
@@ -98,46 +135,4 @@
         alert_str += std::string("flags: ") + std::to_string(alert.event.open.mode) + '\n';
 
         return alert_str;
-    }
-
-    void Alerts::print_alert(const struct alert& alert)
-    {
-        std::string to_print("--------- RECEIVED ALERT ---------\n");
-        to_print += alert.rule.type == execve_rule_type ? execve_alert_to_string(alert) : open_alert_to_string(alert);
-        std::cout << to_print << std::endl;
-    }
-
-    void Alerts::listen_to_alerts()
-    {
-        int sock_fd = subscribe_to_netlink();
-        if(sock_fd < 0)
-        {
-            return;
-        }
-
-        int err_counter = 0;
-        while (true)
-        {
-            int recv_bytes = recvmsg(sock_fd, &msg, 0);
-            if(recv_bytes < 0)
-            {
-                std::cout << "Failed to receive alert. errno: " << errno << std::endl;
-                ++err_counter;
-                if(err_counter < 5)
-                {
-                    continue;
-                }
-                break;
-            }
-            else
-            {
-                err_counter = 0;
-                struct alert *alert = (struct alert *)NLMSG_DATA(nlh);
-                print_alert(*alert);
-            }
-
-            memset(nlh, 0, NLMSG_SPACE(sizeof(struct alert)));
-        }
-
-        close(sock_fd);
     }
