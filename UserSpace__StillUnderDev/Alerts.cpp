@@ -66,11 +66,11 @@
         alert_str += "prevention: " + std::to_string(alert.rule.data.execve.prevention) + '\n';
 
         alert_str += std::string("Malicious event:\n");
-        alert_str += alert.event.execve.binary_path + '\n';
-        alert_str += alert.event.execve.full_command + '\n';
-        alert_str += std::to_string(alert.event.execve.uid) + '\n';
-        alert_str += std::to_string(alert.event.execve.gid) + '\n';
-        alert_str += std::to_string(alert.event.execve.argc) + '\n';
+        alert_str += std::string("binary_path: ") + alert.event.execve.binary_path + '\n';
+        alert_str += std::string("full_command: ") + alert.event.execve.full_command + '\n';
+        alert_str += std::string("uid: ") + std::to_string(alert.event.execve.uid) + '\n';
+        alert_str += std::string("gid: ") + std::to_string(alert.event.execve.gid) + '\n';
+        alert_str += std::string("argc: ") + std::to_string(alert.event.execve.argc) + '\n';
 
         return alert_str;
     }
@@ -89,13 +89,13 @@
         alert_str += "prevention: " + std::to_string(alert.rule.data.open.prevention) + '\n';
 
         alert_str += std::string("Malicious event:\n");
-        alert_str += alert.event.open.binary_path + '\n';
-        alert_str += alert.event.open.full_command + '\n';
-        alert_str += alert.event.open.target_path + '\n';
-        alert_str += std::to_string(alert.event.open.uid) + '\n';
-        alert_str += std::to_string(alert.event.open.gid) + '\n';
-        alert_str += std::to_string(alert.event.open.flags) + '\n';
-        alert_str += std::to_string(alert.event.open.mode) + '\n';
+        alert_str += std::string("binary_path: ") + alert.event.open.binary_path + '\n';
+        alert_str += std::string("full_command: ") + alert.event.open.full_command + '\n';
+        alert_str += std::string("target_path: ") + alert.event.open.target_path + '\n';
+        alert_str += std::string("uid: ") + std::to_string(alert.event.open.uid) + '\n';
+        alert_str += std::string("gid: ") + std::to_string(alert.event.open.gid) + '\n';
+        alert_str += std::string("mode: ") + std::to_string(alert.event.open.flags) + '\n';
+        alert_str += std::string("flags: ") + std::to_string(alert.event.open.mode) + '\n';
 
         return alert_str;
     }
