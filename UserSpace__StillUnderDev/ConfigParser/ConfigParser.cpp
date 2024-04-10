@@ -2,6 +2,7 @@
 #include "../rapidjson/schema.h"
 #include "../rapidjson/filereadstream.h"
 #include "Schema.hpp"
+#include "../UserSpaceRulesRepresentation.hpp"
 
 #include <iostream>
 #include <fstream>
