@@ -6,7 +6,8 @@ USER_SPACE_TARGET := user_app_poc
 
 # User space application build
 USER_SPACE:
-	g++ $(PWD)/UserSpace_POC/UserSpace_POC.cpp -o $(PWD)/UserSpace_POC/$(USER_SPACE_TARGET)
+	g++ -o $(PWD)/UserSpace__StillUnderDev/$(USER_SPACE_TARGET) $(PWD)/UserSpace__StillUnderDev/UserSpace.cpp $(PWD)/UserSpace__StillUnderDev/Menu.cpp $(PWD)/UserSpace__StillUnderDev/Ioctl.cpp $(PWD)/UserSpace__StillUnderDev/Alerts.cpp $(PWD)/UserSpace__StillUnderDev/ConfigParser/ConfigParser.cpp  $(PWD)/UserSpace__StillUnderDev/UserSpaceRulesRepresentation.cpp
+#	g++ $(PWD)/UserSpace_POC/UserSpace_POC.cpp -o $(PWD)/UserSpace_POC/$(USER_SPACE_TARGET)
 	
 # Kernel module build
 KMOD:
@@ -21,9 +22,9 @@ KMOD:
 
 all: USER_SPACE KMOD
 
-
 clean:
 	-pkill -9 $(USER_SPACE_TARGET)
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 	-rmmod mymodule
 	-rm -f $(PWD)/UserSpace_POC/$(USER_SPACE_TARGET)
+	-rm -f $(PWD)/UserSpace__StillUnderDev/$(USER_SPACE_TARGET)

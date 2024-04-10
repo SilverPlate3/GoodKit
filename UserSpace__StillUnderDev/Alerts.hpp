@@ -14,7 +14,7 @@ public:
 
 private:
 
-    int Alerts::bind_netlink_socket();
+    int bind_netlink_socket();
 
     void print_alert(const struct alert& alert);
 
