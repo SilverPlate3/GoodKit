@@ -1,6 +1,7 @@
-#include "ConfigParser/ConfigParser.hpp"
 #include "Menu.hpp"
+#include "ConfigParser/ConfigParser.hpp"
 #include "Ioctl.hpp"
+#include "UserSpaceRulesRepresentation.hpp"
 
 #include <iostream>
 #include <cstdlib>
@@ -72,14 +73,64 @@
 
     void Menu::addSingleRule() 
     {
-        // TODO: implement this
-        std::cout << "Adding a single rule..." << std::endl;
+        int option = GetRuleTypeViaCLI();
+        std::cout << "Empty values will use difaults\n" << std::endl;
+
+        switch (option) 
+        {
+            case 1: 
+            {
+                addSingleExecveRule();
+                break;
+            }
+            case 2: 
+            {
+                addSingleOpenRule();
+                break;
+            }
+            default: std::cout << "Invalid option. Please try again." << std::endl;
+        }
+    }
+
+    int Menu::GetRuleTypeViaCLI()
+    {
+        int option;
+        std::cout << "\nRule type:\n"
+                  << "1 - execve rule\n"
+                  << "2 - open/openat rule\n"
+                  << "Enter your choice: ";
+        std::cin >> option;
+        std::cout << std::endl;
+        return option;
+    }
+
+    void Menu::addSingleExecveRule() 
+    {
+        userspace_execve_rule new_rule;
+        new_rule.build_rule_via_cli();
+        struct rule rule = { };
+        rule.type = execve_rule_type;
+        rule.data.execve = new_rule.to_execve_rule();
+        m_ioctl.add_rule(rule);
+    }
+
+    void Menu::addSingleOpenRule() 
+    {
+        userspace_open_rule new_rule;
+        new_rule.build_rule_via_cli();
+        struct rule rule = { };
+        rule.type = open_rule_type;
+        rule.data.open = new_rule.to_open_rule();
+        m_ioctl.add_rule(rule);
     }
 
     void Menu::addSingleExclusion() 
     {
-        // TODO: implement this
-        std::cout << "Adding a single exclusion...\n";
+        std::cout << "binary_path to exclude:  ";
+        std::string binary_path;
+        std::cout << std::endl;
+        std::getline(std::cin, binary_path);
+        m_ioctl.add_exclusion(binary_path);
     }
 
     void Menu::deleteAllRules() 

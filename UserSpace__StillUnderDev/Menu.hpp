@@ -16,6 +16,12 @@ private:
 
     void addSingleRule();
 
+    int GetRuleTypeViaCLI();
+
+    void addSingleExecveRule();
+
+    void addSingleOpenRule();
+
     void addSingleExclusion();
 
     void deleteAllRules();
