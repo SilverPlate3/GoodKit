@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../Alert.h"
-#include "../Netlink/NetlinkSettings.h"
+#include "../Kernel/Alert.h"
+#include "../Kernel/Netlink/NetlinkSettings.h"
 
 #include <sys/socket.h>
 #include <string>

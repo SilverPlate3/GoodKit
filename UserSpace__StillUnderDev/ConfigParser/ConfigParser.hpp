@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../rapidjson/document.h"
-#include "../../IoctlContracts.h"
+#include "../../Kernel/IoctlContracts.h"
 
 #include <vector>
 

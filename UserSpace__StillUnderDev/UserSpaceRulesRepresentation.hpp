@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../IoctlContracts.h"
+#include "../Kernel/IoctlContracts.h"
 
 #include <string>
 
