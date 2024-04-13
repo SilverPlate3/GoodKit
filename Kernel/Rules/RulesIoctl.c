@@ -15,7 +15,6 @@ static atomic_t good_kit_rules_file_open = ATOMIC_INIT(NOT_USED);
 
 static long good_kit_rules_ioctl_main_callback(struct file *file, unsigned int ioctl_num, unsigned long parameter) 
 {
-    pr_info("good_kit_rules_ioctl_main_callback\n");
     if (atomic_cmpxchg(&good_kit_rules_file_open, NOT_USED, USED)) 
     {
         pr_alert("good_kit_rules_ioctl_main_callback - file is already open\n");
