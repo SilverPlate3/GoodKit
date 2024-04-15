@@ -1,14 +1,13 @@
 {
     "execve_rules": [
       {
-        "full_command": "*usermod -aG root*",
+        "full_command": "usermod -aG root*",
         "uid": 1000,
         "gid": 1000
       },
       {
-        "binary_path": "*/wget",
-        "full_command": "*Malicious.com",
-        "argc": 3,
+        "binary_path": "*ping",
+        "full_command": "*ping 9.9.*",
         "prevention": 1
       }
     ],
@@ -23,8 +22,8 @@
         "mode": 128
       },
       {
-        "target_path": "/etc/passwd",
-        "flags": 0,
+        "target_path": "/etc/samba/smb.conf",
+        "flags": 1,
         "prevention": 1
       }
     ],

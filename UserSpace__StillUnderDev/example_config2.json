@@ -1,0 +1,23 @@
+{
+    "execve_rules": [
+      {
+        "binary_path": "*/wget",
+        "full_command": "*Malicious.com",
+        "argc": 3,
+        "prevention": 1
+      }
+    ],
+    "open_rules": [
+      {
+        "target_path": "/etc/hosts",
+        "uid": 1000,
+        "gid": 1000,
+        "flags": 1,
+        "prevention": 1
+      }
+    ],
+    "excluded_binary_paths": [
+      "*/ping",
+      "*/cat"
+    ]
+}
