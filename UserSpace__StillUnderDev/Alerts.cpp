@@ -95,8 +95,8 @@
     {
         std::string alert_str;
         alert_str += std::string("Matched on execve rule:\n");
-        alert_str += alert.rule.data.execve.binary_path == DEFAULT_BINARY_PATH ? "" : std::string("binary_path: ") + alert.rule.data.execve.binary_path + '\n';
-        alert_str += alert.rule.data.execve.full_command == DEFAULT_FULL_COMMAND ? "" : std::string("full_command: ") + alert.rule.data.execve.full_command + '\n';
+        alert_str += alert.rule.data.execve.binary_path == std::string(DEFAULT_BINARY_PATH) ? "" : std::string("binary_path: ") + alert.rule.data.execve.binary_path + '\n';
+        alert_str += alert.rule.data.execve.full_command == std::string(DEFAULT_FULL_COMMAND) ? "" : std::string("full_command: ") + alert.rule.data.execve.full_command + '\n';
         alert_str += alert.rule.data.execve.uid == DEFAULT_UID ? "" : std::string("uid: ") + std::to_string(alert.rule.data.execve.uid) + '\n';
         alert_str += alert.rule.data.execve.gid == DEFAULT_GID ? "" : std::string("gid: ") + std::to_string(alert.rule.data.execve.gid) + '\n';
         alert_str += alert.rule.data.execve.argc == DEFAULT_ARGC ? "" : std::string("argc: ") + std::to_string(alert.rule.data.execve.argc) + '\n';
@@ -116,9 +116,9 @@
     {
         std::string alert_str;
         alert_str += std::string("Matched on open rule:\n");
-        alert_str += alert.rule.data.open.binary_path == DEFAULT_BINARY_PATH ? "" : std::string("binary_path: ") + alert.rule.data.open.binary_path + '\n';
-        alert_str += alert.rule.data.open.full_command == DEFAULT_FULL_COMMAND ? "" : std::string("full_command: ") + alert.rule.data.open.full_command + '\n';
-        alert_str += alert.rule.data.open.target_path == DEFAULT_TARGET_PATH ? "" : std::string("target_path: ") + alert.rule.data.open.target_path + '\n';
+        alert_str += alert.rule.data.open.binary_path == std::string(DEFAULT_BINARY_PATH) ? "" : std::string("binary_path: ") + alert.rule.data.open.binary_path + '\n';
+        alert_str += alert.rule.data.open.full_command == std::string(DEFAULT_FULL_COMMAND) ? "" : std::string("full_command: ") + alert.rule.data.open.full_command + '\n';
+        alert_str += alert.rule.data.open.target_path == std::string(DEFAULT_TARGET_PATH) ? "" : std::string("target_path: ") + alert.rule.data.open.target_path + '\n';
         alert_str += alert.rule.data.open.uid == DEFAULT_UID ? "" : std::string("uid: ") + std::to_string(alert.rule.data.open.uid) + '\n';
         alert_str += alert.rule.data.open.gid == DEFAULT_GID ? "" : std::string("gid: ") + std::to_string(alert.rule.data.open.gid) + '\n';
         alert_str += alert.rule.data.open.flags == DEFAULT_FLAGS ? "" : std::string("flags: ") + std::to_string(alert.rule.data.open.flags) + '\n';
@@ -131,8 +131,8 @@
         alert_str += std::string("target_path: ") + alert.event.open.target_path + '\n';
         alert_str += std::string("uid: ") + std::to_string(alert.event.open.uid) + '\n';
         alert_str += std::string("gid: ") + std::to_string(alert.event.open.gid) + '\n';
-        alert_str += std::string("mode: ") + std::to_string(alert.event.open.flags) + '\n';
-        alert_str += std::string("flags: ") + std::to_string(alert.event.open.mode) + '\n';
+        alert_str += std::string("mode: ") + std::to_string(alert.event.open.mode) + '\n';
+        alert_str += std::string("flags: ") + std::to_string(alert.event.open.flags) + '\n';
 
         return alert_str;
     }
