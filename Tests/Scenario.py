@@ -111,6 +111,9 @@ Menu.SendOptionToMenu(user_app_proc, 3)
 # Check ping 9.9.9.9 no prevention and no alert
 ProcessUtils.sucessfull_command_doesnt_trigger_kmod("ping 9.9.9.9", user_app_proc)
 
+# Check writing yo smb.conf no prevention and no alert
+ProcessUtils.sucessfull_command_doesnt_trigger_kmod("echo malicious >> /etc/samba/smb.conf", user_app_proc)
+
 # Check the request for a json path
 Menu.SendOption1ToMenu(user_app_proc, "/home/ariel/Desktop/KernelDev/GoodKit/UserSpace__StillUnderDev/example_config1.json")
 Menu.EnsureStdOutIsMenu(user_app_proc)
@@ -147,3 +150,10 @@ ensure_expected_alert(expected_wget_alert)
 
 # Check usermod no prevention and no alert as usermod is excluded in example_config2.json
 ProcessUtils.sucessfull_command_doesnt_trigger_kmod("usermod -aG root user", user_app_proc)
+
+# Unload the kernel module
+user_app_proc.kill()
+time.sleep(0.5)
+TestSetup.ensure_unload_kernel_module()
+
+print("All tests passed!")

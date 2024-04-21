@@ -1,5 +1,8 @@
 import subprocess
 import os
+
+import ProcessUtils
+
 module_name = "mymodule"
 
 def ensure_setup():
@@ -25,3 +28,12 @@ def get_user_space_binary_path():
     script_dir = os.path.dirname(__file__)
     binary_path = os.path.join(script_dir, relative_path)
     return binary_path
+
+def ensure_unload_kernel_module():
+    rmmod = subprocess.Popen(f"sudo rmmod {module_name}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    return_code = rmmod.wait(5)
+    assert return_code == 0, f"Error: rmmod failed. stdout: '{rmmod.stdout}', stderr: '{rmmod.stderr}' returned: {rmmod.returncode}"
+
+    lsmod = subprocess.Popen(f"sudo lsmod", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    output = ProcessUtils.read_nonblocking(lsmod.stdout.fileno()).strip()
+    assert module_name not in output, f"Error: {module_name} in output output, got: '{output}'"
