@@ -7,14 +7,14 @@ Users can control the LKM detection rules and exclusion with a simple json.
 
 # Project state:
 **Kernel module** - Fully tested and ready for deployment. More optimizations and capabilities will come in the near future.<br>
-**Userspace process** - The real user space process is still under development. At the moment use the UserSpace_poc which offers the reader basic understanding of how the project works. <br>
+**Userspace process** - Fully tested and ready for deployment.<br>
 **Other** - See the NextSteps.txt 
 
 # How to use
 ```
 git clone
 sudo make all
-sudo ./UserSpace_POC/user_app_poc
+sudo ./UserSpace/user_app
 ```
 
 ### Tested and built on
