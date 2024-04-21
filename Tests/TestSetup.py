@@ -24,7 +24,7 @@ def ensure_user_space_binary_exist():
     assert os.path.exists(binary_path), f"Error: The user space binary '{binary_path}' does not exist. Please build the project with the Makefile."
 
 def get_user_space_binary_path():
-    relative_path = '../UserSpace__StillUnderDev/user_app'
+    relative_path = '../UserSpace/user_app'
     script_dir = os.path.dirname(__file__)
     binary_path = os.path.join(script_dir, relative_path)
     return binary_path
