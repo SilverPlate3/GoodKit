@@ -5,11 +5,6 @@ Offer blue teams a reliable and efficient way to detect and prevent malicious pr
 Users can control the LKM detection rules and exclusion with a simple json.
 <br>
 
-# Project state:
-**Kernel module** - Fully tested and ready for deployment. More optimizations and capabilities will come in the near future.<br>
-**Userspace process** - Fully tested and ready for deployment.<br>
-**Other** - See the NextSteps.txt 
-
 # How to use
 ```
 git clone
@@ -17,9 +12,12 @@ sudo make all
 sudo ./UserSpace/user_app
 ```
 
-### Tested and built on
+# Tested and built on
 Built on kernel version: 6.5.0-26-generic <br>
 Tested on kernel version: 6.5.0-26-generic <br>
 Tested on distro: Ubuntu 22.04.3 LTS <br>
 GCC version: 12.3.0 <br>
 
+<br>
+<br>
+**Future optimizations and features** - See NextSteps.txt 
