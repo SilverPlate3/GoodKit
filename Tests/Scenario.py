@@ -27,7 +27,7 @@ Menu.EnsureStdOutIsMenu(user_app_proc)
 Menu.SendOptionToMenu(user_app_proc, 2)
 
 # Check the request for a json path
-Menu.SendOption1ToMenu(user_app_proc, "/home/ariel/Desktop/KernelDev/GoodKit/UserSpace/example_config1.json")
+Menu.SendOption1ToMenu(user_app_proc, f"{os.path.dirname(__file__)}/../UserSpace/example_config1.json")
 
 # Check the menu after inserting the json path
 Menu.EnsureStdOutIsMenu(user_app_proc)
@@ -115,10 +115,10 @@ ProcessUtils.sucessfull_command_doesnt_trigger_kmod("ping 9.9.9.9", user_app_pro
 ProcessUtils.sucessfull_command_doesnt_trigger_kmod("echo malicious >> /etc/samba/smb.conf", user_app_proc)
 
 # Check the request for a json path
-Menu.SendOption1ToMenu(user_app_proc, "/home/ariel/Desktop/KernelDev/GoodKit/UserSpace/example_config1.json")
+Menu.SendOption1ToMenu(user_app_proc, f"{os.path.dirname(__file__)}/../UserSpace/example_config1.json")
 Menu.EnsureStdOutIsMenu(user_app_proc)
 
-Menu.SendOption1ToMenu(user_app_proc, "/home/ariel/Desktop/KernelDev/GoodKit/UserSpace/example_config2.json")
+Menu.SendOption1ToMenu(user_app_proc, f"{os.path.dirname(__file__)}/../UserSpace/example_config2.json")
 Menu.EnsureStdOutIsMenu(user_app_proc)
 
 # Check that 6 rules and 6 exclusions were added as specifid in the two jsons. Check via dmesg
