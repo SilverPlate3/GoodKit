@@ -2,7 +2,7 @@ PWD := $(CURDIR)
 USER_SPACE_TARGET := user_app
 
 USER_SPACE:
-	g++ -o $(PWD)/$(USER_SPACE_TARGET) $(PWD)/UserSpace.cpp $(PWD)/Menu.cpp $(PWD)/Ioctl.cpp $(PWD)/Alerts.cpp $(PWD)/ConfigParser/ConfigParser.cpp  $(PWD)/UserSpaceRulesRepresentation.cpp
+	g++ -std=c++17 -pthread -o $(PWD)/$(USER_SPACE_TARGET) $(PWD)/UserSpace.cpp $(PWD)/Menu.cpp $(PWD)/Ioctl.cpp $(PWD)/Alerts.cpp $(PWD)/ConfigParser/ConfigParser.cpp  $(PWD)/UserSpaceRulesRepresentation.cpp
 
 all: USER_SPACE 
 
