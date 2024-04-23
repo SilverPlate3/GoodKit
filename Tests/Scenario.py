@@ -152,7 +152,7 @@ ensure_expected_alert(expected_wget_alert)
 ProcessUtils.sucessfull_command_doesnt_trigger_kmod("usermod -aG root user", user_app_proc)
 
 # Unload the kernel module
-user_app_proc.kill()
+subprocess.Popen(f"sudo kill -9 {user_app_proc.pid}", shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 time.sleep(0.5)
 TestSetup.ensure_unload_kernel_module()
 

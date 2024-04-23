@@ -32,7 +32,7 @@ def get_user_space_binary_path():
 def ensure_unload_kernel_module():
     rmmod = subprocess.Popen(f"sudo rmmod {module_name}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     return_code = rmmod.wait(5)
-    assert return_code == 0, f"Error: rmmod failed. stdout: '{rmmod.stdout}', stderr: '{rmmod.stderr}' returned: {rmmod.returncode}"
+    assert return_code == 0, f"Error: rmmod failed. stdout: '{rmmod.read_nonblocking(lsmod.stdout.fileno()).strip()}', stderr: '{rmmod.read_nonblocking(lsmod.stderr.fileno()).strip()}' returned: {rmmod.returncode}"
 
     lsmod = subprocess.Popen(f"sudo lsmod", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     output = ProcessUtils.read_nonblocking(lsmod.stdout.fileno()).strip()
