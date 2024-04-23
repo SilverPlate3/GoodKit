@@ -184,10 +184,10 @@ static void append_cwd_to_path(char * path)
         spin_unlock(&current->fs->lock);
         return;
     }
+    spin_unlock(&current->fs->lock);
     
     char *cwd = d_path(&pwd, buf, PATH_MAX);
     path_put(&pwd);
-    spin_unlock(&current->fs->lock);
     strcat(path, cwd);
     strcat(path, "/");
     kfree(buf);
