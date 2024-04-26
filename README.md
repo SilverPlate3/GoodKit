@@ -13,10 +13,10 @@ sudo ./UserSpace/user_app
 ```
 
 # Tested and built on
-Built on kernel version: 6.5.0-26-generic <br>
-Tested on kernel version: 6.5.0-26-generic <br>
-Tested on distro: Ubuntu 22.04.3 LTS <br>
-GCC version: 12.3.0 <br>
+Built on kernel version: 6.5.0-26-generic, 6.7.0-rc8<br>
+Tested on kernel version: 6.5.0-26-generic, 6.7.0-rc8<br>
+Tested on distro: Ubuntu 22.04.3 LTS, Ubuntu 20.04.4 LTS <br>
+GCC version: 12.3.0, 9.4.0<br>
 
 <br>
 <br>
